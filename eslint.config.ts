@@ -6,7 +6,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
-  { ignores: ['src/utils/object.ts'] },
+  { ignores: ['server.js'] },
   {
     linterOptions: {
       noInlineConfig: true,
