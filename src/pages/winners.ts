@@ -1,13 +1,13 @@
 import { Component } from '../components/abstract';
 import { Page } from './abstract';
 
-export class HomePage extends Page {
+export class WinnersPage extends Page {
   public render(): void {
     this.root.addClasses('py-10');
 
     const titleComponent = new Component({
       tag: 'h1',
-      textContent: 'Home',
+      textContent: 'Winners',
       classNames: ['text-2xl text-center text-black dark:text-white'],
     });
 
