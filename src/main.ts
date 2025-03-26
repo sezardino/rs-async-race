@@ -4,7 +4,7 @@ import { ApplicationUrls } from './const/router';
 import { HomePage } from './pages/home';
 import { NotFoundPage } from './pages/not-found';
 import { WinnersPage } from './pages/winners';
-import Router from './router';
+import { Router } from './router';
 
 const rootElement = document.getElementById('app') as HTMLElement;
 
