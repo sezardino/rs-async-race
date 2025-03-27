@@ -2,20 +2,20 @@ import type { ClassValue } from 'clsx';
 import { cn } from '../utils/cn';
 
 export type ComponentConfig = {
-  tag?: string;
+  tag?: keyof HTMLElementTagNameMap;
   classNames?: ClassValue[];
   textContent?: string;
   attributes?: Record<string, string>;
 };
 
-export class Component<T extends HTMLElement = HTMLDivElement> {
+export class Component<T extends HTMLElement = HTMLElement> {
   public element: T;
 
-  constructor(config: ComponentConfig) {
-    this.element = document.createElement(config.tag || 'div') as T;
-    if (config.classNames?.length) this.setClasses(config.classNames);
-    if (config.textContent) this.setText(config.textContent);
-    if (config.attributes)
+  constructor(config?: ComponentConfig) {
+    this.element = document.createElement(config?.tag || 'div') as T;
+    if (config?.classNames?.length) this.setClasses(config.classNames);
+    if (config?.textContent) this.setText(config.textContent);
+    if (config?.attributes)
       Object.entries(config.attributes).forEach(([key, value]) =>
         this.setAttribute(key, value)
       );

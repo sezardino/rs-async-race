@@ -14,7 +14,7 @@ export class WinnersPage extends Page {
     });
 
     const homeLink = new ButtonLink({
-      href: ApplicationUrls.home,
+      href: ApplicationUrls.garage,
       textContent: 'Home',
     });
     const winnersLink = new ButtonLink({

@@ -1,5 +1,5 @@
 export const ApplicationUrls = Object.freeze({
-  home: '/',
+  garage: '/',
   winners: '/winners',
 });
 

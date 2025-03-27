@@ -1,5 +1,5 @@
 import { Component } from '../components/abstract';
-import type Router from '../router';
+import type { Router } from '../router';
 
 type PageConfig = {
   router: Router;

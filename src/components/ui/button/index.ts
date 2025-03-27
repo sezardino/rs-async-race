@@ -18,6 +18,8 @@ type AbstractButtonConfig = Pick<
 };
 
 class AbstractButton extends Component {
+  private color: ButtonColor;
+
   constructor(config: AbstractButtonConfig) {
     const {
       tag,
@@ -39,6 +41,18 @@ class AbstractButton extends Component {
       textContent,
       attributes,
     });
+
+    this.color = color;
+  }
+
+  public changeColor(color: ButtonColor): void {
+    const currentClassNames = BUTTON_STYLES[this.color].split(' ');
+
+    currentClassNames.forEach((className) => {
+      if (className) this.element.classList.remove(className);
+    });
+
+    this.addClasses(BUTTON_STYLES[color]);
   }
 }
 
@@ -61,12 +75,15 @@ type ButtonLinkConfig = Omit<AbstractButtonConfig, 'tag' | 'type'> & {
 };
 
 export class ButtonLink extends AbstractButton {
+  public href: string;
+
   constructor({ href, ...config }: ButtonLinkConfig) {
     super({
       tag: 'a',
       ...config,
     });
 
+    this.href = href;
     this.setAttribute('href', href);
   }
 }
