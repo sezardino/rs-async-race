@@ -3,10 +3,13 @@ export class Signal<T> {
   private subscribers: Set<(value: T) => void>;
 
   constructor(
-    initialValue: T,
+    initialValue: T | (() => T),
     initialSubscriptions: ((value: T) => void)[] = []
   ) {
-    this.value = initialValue;
+    this.value =
+      typeof initialValue === 'function'
+        ? (initialValue as () => T)()
+        : initialValue;
     this.subscribers = new Set();
 
     initialSubscriptions.forEach((callback) => this.subscribe(callback));

@@ -1,6 +1,6 @@
 export type PaginationRequest = {
-  page: number;
-  limit: number;
+  page?: number;
+  limit?: number;
 };
 
 export type PaginationMeta = {
