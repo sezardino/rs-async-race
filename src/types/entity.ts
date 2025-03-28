@@ -1,5 +1,5 @@
 export type CarEntity = {
-  id: string;
+  id: number;
   name: string;
   color: string;
 };

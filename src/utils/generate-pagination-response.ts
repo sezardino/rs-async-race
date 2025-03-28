@@ -7,17 +7,17 @@ type Props<T> = {
   limit: number;
 };
 
-const TOTAL_COUNT_HEADER_NAME = 'X-Total-Count';
+const TOTAL_COUNT_HEADER_NAME = 'x-total-count';
 
 export const generatePaginationResponse = <T>(
   props: Props<T>
 ): PaginationResponse<T> => {
   const { response, limit, page } = props;
 
-  const totalCount =
-    typeof response.headers[TOTAL_COUNT_HEADER_NAME] === 'number'
-      ? response.headers[TOTAL_COUNT_HEADER_NAME]
-      : 0;
+  const totalCountHeader = Number(response.headers[TOTAL_COUNT_HEADER_NAME]);
+  const totalCount = Number.isNaN(totalCountHeader) ? 0 : totalCountHeader;
+
+  const totalPages = Math.max(Math.ceil(totalCount / limit), 1);
 
   return {
     data: response.data,
@@ -25,6 +25,7 @@ export const generatePaginationResponse = <T>(
       limit,
       page,
       totalCount,
+      totalPages,
     },
   };
 };

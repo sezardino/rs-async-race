@@ -63,10 +63,6 @@ export class Component<T extends HTMLElement = HTMLElement> {
     });
   }
 
-  public remove(): void {
-    this.element.remove();
-  }
-
   public getValue(): string | void {
     if (!(this.element instanceof HTMLInputElement)) return;
 
@@ -83,5 +79,11 @@ export class Component<T extends HTMLElement = HTMLElement> {
     if (!this.element) return;
 
     this.element.remove();
+  }
+
+  public clean(): void {
+    if (!this.element) return;
+
+    this.element.innerHTML = '';
   }
 }

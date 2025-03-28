@@ -31,8 +31,8 @@ export class NotFoundPage extends Page {
     });
 
     const button = new ButtonLink({
-      textContent: 'Back to Main page',
-      href: ApplicationUrls.home,
+      textContent: 'Back to Garage',
+      href: ApplicationUrls.garage,
     });
 
     section.appendTo(this.root.element);

@@ -1,7 +1,7 @@
 import type { ApplicationUrls } from '../const/router';
 import type { Layout } from '../layouts/abstract';
 import type { Page } from '../pages/abstract';
-import { Signal } from '../utils/signal';
+import { Signal } from '../reactivity/signal';
 
 type Routes = Record<
   ApplicationUrls,

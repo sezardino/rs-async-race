@@ -1,7 +1,7 @@
 import { Component } from '../components/abstract';
 import type { Router } from '../router';
 
-type PageConfig = {
+export type PageConfig = {
   router: Router;
 };
 
