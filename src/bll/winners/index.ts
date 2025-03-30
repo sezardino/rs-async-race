@@ -25,7 +25,7 @@ export class WinnersApiService {
       dto;
 
     return axiosInstance
-      .get<WinnersResponse>('/winner', {
+      .get<WinnersResponse>('/winners', {
         params: { _page: page, _limit: limit },
       })
       .then((response) =>
@@ -34,23 +34,23 @@ export class WinnersApiService {
   }
 
   public static winner(id: string): Promise<AxiosResponse<WinnerResponse>> {
-    return axiosInstance.get<WinnerResponse>(`/winner/${id}`);
+    return axiosInstance.get<WinnerResponse>(`/winners/${id}`);
   }
 
   public static createWinner(
     dto: CreateWinnerRequest
   ): Promise<AxiosResponse<CreateWinnerResponse>> {
-    return axiosInstance.post<CreateWinnerResponse>('/winner', dto);
+    return axiosInstance.post<CreateWinnerResponse>('/winners', dto);
   }
 
   public static updateWinner({
     winnerId,
     ...dto
   }: EditWinnerRequest): Promise<AxiosResponse<EditWinnerResponse>> {
-    return axiosInstance.put<EditWinnerResponse>(`/winner/${winnerId}`, dto);
+    return axiosInstance.put<EditWinnerResponse>(`/winners/${winnerId}`, dto);
   }
 
   public static deleteWinner(winnerId: number): Promise<AxiosResponse<void>> {
-    return axiosInstance.delete<void>(`/winner/${winnerId}`);
+    return axiosInstance.delete<void>(`/winners/${winnerId}`);
   }
 }
