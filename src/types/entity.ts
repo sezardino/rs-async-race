@@ -9,3 +9,7 @@ export type WinnerEntity = {
   wins: number;
   time: number;
 };
+
+export type WinnerWithCar = WinnerEntity & {
+  car: CarEntity | null;
+};

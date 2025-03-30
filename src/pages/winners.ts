@@ -6,7 +6,7 @@ import { PAGINATION_DEFAULT_PAGE } from '../const/pagination';
 import { Query } from '../reactivity/query';
 import { Signal } from '../reactivity/signal';
 import { LocalStorageService } from '../services/local-storage';
-import type { WinnerEntity } from '../types/entity';
+import type { WinnerWithCar } from '../types/entity';
 import type { PaginationResponse } from '../types/pagination';
 import type { PageConfig } from './abstract';
 import { Page } from './abstract';
@@ -30,7 +30,7 @@ export class WinnersPage extends Page {
   });
 
   private winnersQuery = new Query({
-    callback: (arguments_): Promise<PaginationResponse<WinnerEntity>> =>
+    callback: (arguments_): Promise<PaginationResponse<WinnerWithCar>> =>
       WinnersApiService.winners(arguments_),
     defaultArgs: { page: this.page.get() },
     onSuccess: (response): void => {
@@ -48,7 +48,7 @@ export class WinnersPage extends Page {
   public render(): void {
     this.root.addClasses('py-10');
 
-    this.root.append(this.title);
+    this.root.append(this.title, this.winnersSection);
   }
 
   private getTitleCopy(totalCount?: number): string {

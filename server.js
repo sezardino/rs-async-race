@@ -138,15 +138,17 @@ const generateCars = (count) => {
   }));
 };
 
+const generateWinners = (count) => {
+  return Array.from({ length: count }, (_, index) => ({
+    id: index + 1,
+    wins: Math.floor(Math.random() * 100) + 1,
+    time: (Math.random() * 5 + 1).toFixed(2),
+  }));
+};
+
 const db = {
   garage: generateCars(1000),
-  winners: [
-    {
-      id: 1,
-      wins: 1,
-      time: 10,
-    },
-  ],
+  winners: generateWinners(1000),
 };
 
 const server = jsonServer.create();

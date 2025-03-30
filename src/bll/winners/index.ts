@@ -4,9 +4,10 @@ import {
   PAGINATION_DEFAULT_PAGE,
 } from '../../const/pagination';
 import { axiosInstance } from '../../libs/axios';
+import type { WinnerWithCar } from '../../types/entity';
 import type { PaginationResponse } from '../../types/pagination';
 import { generatePaginationResponse } from '../../utils/generate-pagination-response';
-import type { WinnerEntity } from './../../types/entity';
+import { GarageApiService } from '../garage';
 import type {
   CreateWinnerRequest,
   CreateWinnerResponse,
@@ -20,13 +21,34 @@ import type {
 export class WinnersApiService {
   public static winners(
     dto: WinnersRequest
-  ): Promise<PaginationResponse<WinnerEntity>> {
+  ): Promise<PaginationResponse<WinnerWithCar>> {
     const { limit = PAGINATION_DEFAULT_LIMIT, page = PAGINATION_DEFAULT_PAGE } =
       dto;
 
     return axiosInstance
       .get<WinnersResponse>('/winners', {
         params: { _page: page, _limit: limit },
+      })
+      .then(async (response) => {
+        const cars = await Promise.all(
+          response.data.map(async (w) => {
+            try {
+              const car = await GarageApiService.car(w.id);
+
+              return car.data;
+            } catch {
+              return null;
+            }
+          })
+        );
+
+        return {
+          ...response,
+          data: response.data.map((winner) => ({
+            ...winner,
+            car: cars.find((car) => car?.id === winner.id) || null,
+          })),
+        };
       })
       .then((response) =>
         generatePaginationResponse({ response, page, limit })

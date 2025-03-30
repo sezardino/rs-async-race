@@ -1,10 +1,15 @@
 import { PAGINATION_DEFAULT_PAGE } from '../../../const/pagination';
-import type { WinnerEntity } from '../../../types/entity';
+import type { WinnerWithCar } from '../../../types/entity';
 import type { PaginationResponse } from '../../../types/pagination';
 import type { ComponentConfig } from '../../abstract';
 import { Component } from '../../abstract';
 import { div, h2, header } from '../../base';
 import { Button } from '../../ui/button';
+import { Icon } from '../../ui/icon';
+import type { ColumnConfig } from '../../ui/table';
+import { Table } from '../../ui/table';
+
+import CarIcon from '../../../assets/car.svg?raw';
 
 export type WinnersSectionConfig = Omit<
   ComponentConfig,
@@ -37,7 +42,7 @@ export class WinnersSection extends Component {
     this.onPrevPageClick = onPrevPageClick;
   }
 
-  public render(response: PaginationResponse<WinnerEntity>): void {
+  public render(response: PaginationResponse<WinnerWithCar>): void {
     this.cleanSection();
 
     const header = this.getHeader(response.meta.page);
@@ -50,8 +55,10 @@ export class WinnersSection extends Component {
       response.meta.totalPages
     );
 
+    const table = this.getTable(response);
+
     header.append(headerPagination);
-    this.append(header, footerPagination);
+    this.append(header, table, footerPagination);
   }
 
   private cleanSection(): void {
@@ -101,5 +108,47 @@ export class WinnersSection extends Component {
     wrapper.append(previous, next);
 
     return wrapper;
+  }
+
+  private getTable(
+    response: PaginationResponse<WinnerWithCar>
+  ): Table<WinnerWithCar> {
+    const columns: ColumnConfig<WinnerWithCar>[] = [
+      {
+        name: 'number',
+        header: () => 'Number',
+        column: ({ original }) => original.id.toString(),
+      },
+      {
+        name: 'car',
+        header: () => 'Car',
+        column: ({ original }): string | Icon => {
+          if (!original.car) return '-';
+
+          const icon = new Icon({ content: CarIcon });
+          icon.addClasses(['[&>svg]:size-10']);
+          icon.element.style.color = original.car?.color;
+
+          return icon;
+        },
+      },
+      {
+        name: 'name',
+        header: () => 'Name',
+        column: ({ original }) => original.car?.name || '-',
+      },
+      {
+        name: 'wins',
+        header: () => 'Wins',
+        column: ({ original }) => original.wins.toString(),
+      },
+      {
+        name: 'best-time',
+        header: () => 'Best time (seconds)',
+        column: ({ original }) => original.time.toString(),
+      },
+    ];
+
+    return new Table({ data: response.data, columns });
   }
 }

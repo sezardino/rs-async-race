@@ -31,7 +31,7 @@ export class GarageApiService {
       );
   }
 
-  public static car(id: string): Promise<AxiosResponse<CarResponse>> {
+  public static car(id: number): Promise<AxiosResponse<CarResponse>> {
     return axiosInstance.get<CarResponse>(`/garage/${id}`);
   }
 
