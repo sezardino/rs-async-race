@@ -42,7 +42,9 @@ export class Table<T> extends Component<HTMLTableElement> {
   constructor({ data, columns, onSort, initialSort }: TableConfig<T>) {
     super({
       tag: 'table',
-      classNames: ['w-full border-collapse border border-gray-300'],
+      classNames: [
+        'w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400',
+      ],
     });
     this.data = data;
     this.columns = columns;
@@ -79,11 +81,13 @@ export class Table<T> extends Component<HTMLTableElement> {
     this.clean();
 
     const thead = document.createElement('thead');
-    thead.className = 'bg-gray-200 text-left';
+    thead.className =
+      'text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400';
     const headerRow = document.createElement('tr');
     this.columns.forEach(({ name, header, sortable }) => {
       const th = document.createElement('th');
-      th.className = 'p-2 border border-gray-300 hover:bg-gray-300';
+      th.className = 'px-6 py-3';
+      th.scope = 'col';
 
       const head = header({
         name,
@@ -115,13 +119,13 @@ export class Table<T> extends Component<HTMLTableElement> {
     const tbody = document.createElement('tbody');
     this.data.forEach((row) => {
       const tr = document.createElement('tr');
-      tr.className = 'hover:bg-gray-100';
+      tr.className =
+        'odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200';
       this.columns.forEach(({ name, column }, colIndex) => {
         const td = document.createElement('td');
-        td.className = 'p-2 border border-gray-300';
+        td.className = 'px-6 py-4';
 
         const col = column({ name, index: colIndex, original: row });
-
         td.append(col instanceof Component ? col.element : col);
         tr.appendChild(td);
       });
