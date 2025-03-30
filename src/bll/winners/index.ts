@@ -30,8 +30,8 @@ export class WinnersApiService {
 
     const parameters: FetchAcceptedData = { _page: page, _limit: limit };
 
-    if (sort && sort.order && sort.sort) {
-      parameters._sort = sort.sort;
+    if (sort && sort.order && sort.field) {
+      parameters._sort = sort.field;
       parameters._order = sort.order;
     }
 

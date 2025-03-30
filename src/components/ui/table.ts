@@ -24,20 +24,22 @@ export type ColumnConfig<T> = {
   sortable?: boolean;
 };
 
-export type TableSort = { column: string; order: SortOrder };
+export type TableSort = { field: string; order: SortOrder };
 
 export type TableConfig<T> = {
   data: T[];
   columns: ColumnConfig<T>[];
-  onSort?: (sort: TableSort) => void;
+  onSort?: (sort: TableSort | null) => void;
   initialSort?: TableSort;
 };
 
 export class Table<T> extends Component<HTMLTableElement> {
   private data: T[];
   private columns: ColumnConfig<T>[];
-  private sorting?: TableSort;
-  private onSort?: (sort: TableSort) => void;
+  private sorting: TableSort | null;
+  private onSort?: (sort: TableSort | null) => void;
+  private tbody?: HTMLTableSectionElement;
+  private thead?: HTMLTableSectionElement;
 
   constructor({ data, columns, onSort, initialSort }: TableConfig<T>) {
     super({
@@ -49,88 +51,106 @@ export class Table<T> extends Component<HTMLTableElement> {
     this.data = data;
     this.columns = columns;
     this.onSort = onSort;
-    this.sorting = initialSort;
-    this.setData(data);
+    this.sorting = initialSort || null;
+    this.render();
   }
 
   public setData(data: T[]): void {
     this.data = data;
-    this.render();
+    this.renderBody();
   }
 
   private handleSort(columnName: string): void {
-    const currentSort =
-      this.sorting?.column === columnName ? this.sorting.order : null;
-    const newSort: SortOrder =
-      currentSort === 'ASC' ? 'DESC' : currentSort === 'DESC' ? null : 'ASC';
+    const currentOrder =
+      this.sorting?.field === columnName ? this.sorting.order : null;
+    const newOrder: SortOrder | null =
+      currentOrder === 'ASC' ? 'DESC' : currentOrder === 'DESC' ? null : 'ASC';
 
-    const newSorting: TableSort | undefined = newSort
-      ? { column: columnName, order: newSort }
-      : undefined;
+    this.sorting =
+      newOrder === null ? null : { field: columnName, order: newOrder };
 
-    this.sorting = newSorting;
-
-    if (this.onSort && newSorting) {
-      this.onSort(newSorting);
-    } else {
-      this.render();
-    }
+    if (this.onSort) this.onSort(this.sorting);
+    this.renderHeader();
   }
 
-  private render(): void {
-    this.clean();
+  private createElement<K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    classNames: string,
+    content?: string
+  ): HTMLElementTagNameMap[K] {
+    const element = document.createElement(tag);
+    element.className = classNames;
+    if (content) element.textContent = content;
+    return element;
+  }
 
-    const thead = document.createElement('thead');
-    thead.className =
-      'text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400';
-    const headerRow = document.createElement('tr');
+  private renderHeader(): void {
+    if (this.thead) this.thead.remove();
+    this.thead = this.createElement(
+      'thead',
+      'text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400'
+    );
+    const headerRow = this.createElement('tr', '');
+
     this.columns.forEach(({ name, header, sortable }) => {
-      const th = document.createElement('th');
-      th.className = 'px-6 py-3';
+      const th = this.createElement('th', 'px-6 py-3', '');
       th.scope = 'col';
 
       const head = header({
         name,
-        sorting: this.sorting?.column === name ? this.sorting.order : null,
+        sorting: this.sorting?.field === name ? this.sorting.order : null,
       });
 
       th.append(head instanceof Component ? head.element : head);
 
-      if (sortable && this.onSort) {
+      if (sortable) {
         th.classList.add('cursor-pointer');
         th.addEventListener('click', () => this.handleSort(name));
       }
 
-      headerRow.appendChild(th);
-
-      if (this.sorting && this.sorting.order && this.sorting.column === name) {
-        const type = this.sorting.order;
-
+      if (this.sorting?.field === name) {
         const icon = new Icon({
-          content: type === 'ASC' ? ArrowDown : ArrowUp,
+          content: this.sorting.order === 'ASC' ? ArrowDown : ArrowUp,
         });
         icon.addClasses(['[&>svg]:size-4 [&>svg]:inline']);
         th.append(icon.element);
       }
-    });
-    thead.appendChild(headerRow);
-    this.append(thead);
 
-    const tbody = document.createElement('tbody');
+      headerRow.appendChild(th);
+    });
+
+    this.thead.appendChild(headerRow);
+    this.append(this.thead);
+  }
+
+  private renderBody(): void {
+    if (this.tbody) this.tbody.remove();
+    this.tbody = this.createElement('tbody', '');
+
     this.data.forEach((row) => {
-      const tr = document.createElement('tr');
-      tr.className =
-        'odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200';
+      if (!this.tbody) return;
+
+      const tr = this.createElement(
+        'tr',
+        'odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 select-none'
+      );
+
       this.columns.forEach(({ name, column }, colIndex) => {
-        const td = document.createElement('td');
-        td.className = 'px-6 py-4';
+        const td = this.createElement('td', 'px-6 py-4', '');
 
         const col = column({ name, index: colIndex, original: row });
+
         td.append(col instanceof Component ? col.element : col);
         tr.appendChild(td);
       });
-      tbody.appendChild(tr);
+
+      this.tbody.appendChild(tr);
     });
-    this.append(tbody);
+    this.append(this.tbody);
+  }
+
+  private render(): void {
+    this.renderHeader();
+    this.renderBody();
   }
 }

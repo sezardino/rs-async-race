@@ -17,7 +17,7 @@ export type WinnersSectionConfig = Omit<
 > & {
   onNextPageClick: () => void;
   onPrevPageClick: () => void;
-  onSortChange: (sort: TableSort) => void;
+  onSortChange: (sort: TableSort | null) => void;
   initialSort?: TableSort;
 };
 
@@ -119,7 +119,7 @@ export class WinnersSection extends Component {
   }
 
   private getTable(
-    onSortChange: (sort: TableSort) => void,
+    onSortChange: (sort: TableSort | null) => void,
     initialSort?: TableSort
   ): Table<WinnerWithCar> {
     const columns: ColumnConfig<WinnerWithCar>[] = [
@@ -134,6 +134,7 @@ export class WinnersSection extends Component {
         header: () => 'Car',
         column: ({ original }): string | Icon => {
           if (!original.car) return '-';
+          console.log(original.car);
 
           const icon = new Icon({ content: CarIcon });
           icon.addClasses(['[&>svg]:size-10']);

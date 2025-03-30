@@ -32,15 +32,16 @@ export class WinnersPage extends Page {
     textContent: this.getTitleCopy(),
     classNames: ['text-2xl font-bold'],
   });
-
   private winnersSection = new WinnersSection({
     onPrevPageClick: (): void => this.page.set(this.page.get() - 1),
     onNextPageClick: (): void => this.page.set(this.page.get() + 1),
     onSortChange: (sort): void => {
-      if (!isWinnersSortableFields(sort.column)) return;
+      if (sort === null) return this.tableSort.set(null);
+      if (!isWinnersSortableFields(sort.field)) return;
 
-      this.tableSort.set({ sort: sort.column, order: sort.order });
+      this.tableSort.set(sort);
     },
+    initialSort: this.getInitialSort() || undefined,
   });
 
   private winnersQuery = new Query({
@@ -62,6 +63,7 @@ export class WinnersPage extends Page {
     this.tableSort.subscribe((sort) =>
       this.winnersQuery.refetch({ page: this.page.get(), sort })
     );
+    console.log(this.getInitialSort());
   }
 
   public render(): void {
@@ -79,17 +81,17 @@ export class WinnersPage extends Page {
 
     if (typeof lastSort !== 'object') return null;
     if (lastSort === null) return null;
-    if (!('sort' in lastSort) || !('order' in lastSort)) return null;
+    if (!('field' in lastSort) || !('order' in lastSort)) return null;
 
     const order = isSortOrder(lastSort.order) ? lastSort.order : undefined;
-    const sort = isWinnersSortableFields(lastSort.sort)
-      ? lastSort.sort
+    const field = isWinnersSortableFields(lastSort.field)
+      ? lastSort.field
       : undefined;
 
-    if (typeof sort === 'undefined' || typeof order === 'undefined')
+    if (typeof field === 'undefined' || typeof order === 'undefined')
       return null;
 
-    return { order, sort };
+    return { order, field };
   }
 
   private getInitialPage(): number {

@@ -12,7 +12,7 @@ export const isWinnersSortableFields = (
 };
 
 export type WinnersRequestSort = {
-  sort: WinnersSortableFields;
+  field: WinnersSortableFields;
   order: SortOrder;
 };
 
