@@ -71,7 +71,7 @@ export class FormField extends Component {
   public removeErrorMessage(): void {
     if (!this.error) return;
 
-    this.error.remove();
+    // this.error.remove();
 
     this.field?.setAttribute('aria-invalid', '');
     this.field?.setAttribute('aria-errormessage', '');

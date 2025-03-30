@@ -1,5 +1,5 @@
-import type { AxiosResponse } from 'axios';
-import { axiosInstance } from '../../libs/axios';
+import type { FetchResponse } from '../../utils/request';
+import { fetchInstance } from '../../utils/request';
 import type {
   SwitchEngineToDriveRequest,
   SwitchEngineToDriveResponse,
@@ -10,16 +10,20 @@ import type {
 export class EngineApiService {
   public static toggleStatus(
     dto: ToggleEngineStatusRequest
-  ): Promise<AxiosResponse<ToggleEngineStatusResponse>> {
-    return axiosInstance.patch<ToggleEngineStatusResponse>(`engine`, dto);
+  ): Promise<FetchResponse<ToggleEngineStatusResponse>> {
+    return fetchInstance.patch<ToggleEngineStatusResponse>(`engine`, {
+      body: dto,
+    });
   }
 
   public static switchToDrive(
     dto: SwitchEngineToDriveRequest
-  ): Promise<AxiosResponse<SwitchEngineToDriveResponse>> {
-    return axiosInstance.post<SwitchEngineToDriveResponse>(`/races`, {
-      ...dto,
-      status: 'drive',
+  ): Promise<FetchResponse<SwitchEngineToDriveResponse>> {
+    return fetchInstance.post<SwitchEngineToDriveResponse>(`/races`, {
+      body: {
+        ...dto,
+        status: 'drive',
+      },
     });
   }
 }

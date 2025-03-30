@@ -1,6 +1,6 @@
+import type { SortOrder } from '../../types/parameters';
 import { Component } from '../abstract';
 
-type SortOrder = 'asc' | 'desc' | null;
 type CellType = Component | HTMLElement | string;
 
 type HeaderParameter = (parameters: {
@@ -51,10 +51,11 @@ export class Table<T> extends Component<HTMLTableElement> {
 
   private handleSort(columnName: string): void {
     const currentSort = this.sorting[columnName] || null;
-    const newSort: SortOrder =
-      currentSort === 'asc' ? 'desc' : currentSort === 'desc' ? null : 'asc';
 
-    this.sorting = { [columnName]: newSort };
+    const newSort: SortOrder =
+      currentSort === 'ASC' ? 'DESC' : currentSort === 'DESC' ? null : 'ASC';
+
+    this.sorting = newSort ? { [columnName]: newSort } : {};
 
     if (this.onSort) {
       this.onSort(columnName, newSort);

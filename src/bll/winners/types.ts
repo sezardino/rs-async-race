@@ -1,7 +1,11 @@
 import type { WinnerEntity } from '../../types/entity';
 import type { PaginationRequest } from '../../types/pagination';
+import type { SortOrder } from '../../types/parameters';
 
-export type WinnersRequest = PaginationRequest;
+export type WinnersRequest = PaginationRequest & {
+  sort?: 'id' | 'wins' | 'time';
+  order?: SortOrder;
+};
 
 export type WinnersResponse = WinnerEntity[];
 

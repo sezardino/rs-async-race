@@ -1,8 +1,10 @@
 type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
+export type FetchAcceptedData = Record<string, string | number | boolean>;
+
 type FetchOptions = {
-  params?: Record<string, string | number | boolean>;
-  body?: Record<string, string | number | boolean>;
+  params?: FetchAcceptedData;
+  body?: FetchAcceptedData;
 } & Omit<RequestInit, 'body'>;
 
 export type FetchResponse<T> = {

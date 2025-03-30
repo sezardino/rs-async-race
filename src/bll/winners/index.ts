@@ -5,7 +5,7 @@ import {
 import type { WinnerWithCar } from '../../types/entity';
 import type { PaginationResponse } from '../../types/pagination';
 import { generatePaginationResponse } from '../../utils/generate-pagination-response';
-import type { FetchResponse } from '../../utils/request';
+import type { FetchAcceptedData, FetchResponse } from '../../utils/request';
 import { fetchInstance } from '../../utils/request';
 import { GarageApiService } from '../garage';
 import type {
@@ -22,13 +22,22 @@ export class WinnersApiService {
   public static winners(
     dto: WinnersRequest
   ): Promise<PaginationResponse<WinnerWithCar>> {
-    const { limit = PAGINATION_DEFAULT_LIMIT, page = PAGINATION_DEFAULT_PAGE } =
-      dto;
+    const {
+      limit = PAGINATION_DEFAULT_LIMIT,
+      page = PAGINATION_DEFAULT_PAGE,
+      order,
+      sort,
+    } = dto;
+
+    const parameters: FetchAcceptedData = { _page: page, _limit: limit };
+
+    if (sort && order) {
+      parameters.sort = sort;
+      parameters.order = order;
+    }
 
     return fetchInstance
-      .get<WinnersResponse>('/winners', {
-        params: { _page: page, _limit: limit },
-      })
+      .get<WinnersResponse>('/winners', { params: parameters })
       .then(async (response) => {
         const cars = await Promise.all(
           response.data.map(async (winner) => {
