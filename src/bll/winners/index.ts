@@ -1,12 +1,12 @@
-import type { AxiosResponse } from 'axios';
 import {
   PAGINATION_DEFAULT_LIMIT,
   PAGINATION_DEFAULT_PAGE,
 } from '../../const/pagination';
-import { axiosInstance } from '../../libs/axios';
 import type { WinnerWithCar } from '../../types/entity';
 import type { PaginationResponse } from '../../types/pagination';
 import { generatePaginationResponse } from '../../utils/generate-pagination-response';
+import type { FetchResponse } from '../../utils/request';
+import { fetchInstance } from '../../utils/request';
 import { GarageApiService } from '../garage';
 import type {
   CreateWinnerRequest,
@@ -25,15 +25,15 @@ export class WinnersApiService {
     const { limit = PAGINATION_DEFAULT_LIMIT, page = PAGINATION_DEFAULT_PAGE } =
       dto;
 
-    return axiosInstance
+    return fetchInstance
       .get<WinnersResponse>('/winners', {
         params: { _page: page, _limit: limit },
       })
       .then(async (response) => {
         const cars = await Promise.all(
-          response.data.map(async (w) => {
+          response.data.map(async (winner) => {
             try {
-              const car = await GarageApiService.car(w.id);
+              const car = await GarageApiService.car(winner.id);
 
               return car.data;
             } catch {
@@ -55,24 +55,26 @@ export class WinnersApiService {
       );
   }
 
-  public static winner(id: string): Promise<AxiosResponse<WinnerResponse>> {
-    return axiosInstance.get<WinnerResponse>(`/winners/${id}`);
+  public static winner(id: string): Promise<FetchResponse<WinnerResponse>> {
+    return fetchInstance.get<WinnerResponse>(`/winners/${id}`);
   }
 
   public static createWinner(
     dto: CreateWinnerRequest
-  ): Promise<AxiosResponse<CreateWinnerResponse>> {
-    return axiosInstance.post<CreateWinnerResponse>('/winners', dto);
+  ): Promise<FetchResponse<CreateWinnerResponse>> {
+    return fetchInstance.post<CreateWinnerResponse>('/winners', { body: dto });
   }
 
   public static updateWinner({
     winnerId,
     ...dto
-  }: EditWinnerRequest): Promise<AxiosResponse<EditWinnerResponse>> {
-    return axiosInstance.put<EditWinnerResponse>(`/winners/${winnerId}`, dto);
+  }: EditWinnerRequest): Promise<FetchResponse<EditWinnerResponse>> {
+    return fetchInstance.put<EditWinnerResponse>(`/winners/${winnerId}`, {
+      body: dto,
+    });
   }
 
-  public static deleteWinner(winnerId: number): Promise<AxiosResponse<void>> {
-    return axiosInstance.delete<void>(`/winners/${winnerId}`);
+  public static deleteWinner(winnerId: number): Promise<FetchResponse<void>> {
+    return fetchInstance.delete<void>(`/winners/${winnerId}`);
   }
 }
