@@ -1,22 +1,31 @@
 import { WinnersApiService } from '../bll/winners';
+import type { WinnersRequestSort } from '../bll/winners/types';
+import { isWinnersSortableFields } from '../bll/winners/types';
 import { Component } from '../components/abstract';
 import { WinnersSection } from '../components/modules/winners/winners-section';
-import { LS_WINNERS_LAST_PAGE } from '../const/local-storage';
+import {
+  LS_WINNERS_LAST_PAGE,
+  LS_WINNERS_LAST_SORT,
+} from '../const/local-storage';
 import { PAGINATION_DEFAULT_PAGE } from '../const/pagination';
 import { Query } from '../reactivity/query';
 import { Signal } from '../reactivity/signal';
 import { LocalStorageService } from '../services/local-storage';
 import type { WinnerWithCar } from '../types/entity';
 import type { PaginationResponse } from '../types/pagination';
+import { isSortOrder } from '../types/parameters';
 import type { PageConfig } from './abstract';
 import { Page } from './abstract';
 
 export class WinnersPage extends Page {
-  private page = new Signal(() => {
-    const page = LocalStorageService.get(LS_WINNERS_LAST_PAGE);
-
-    return Number.isNaN(Number(page)) ? PAGINATION_DEFAULT_PAGE : Number(page);
-  }, [(value): void => LocalStorageService.set(LS_WINNERS_LAST_PAGE, value)]);
+  private tableSort = new Signal<WinnersRequestSort | null>(
+    () => this.getInitialSort(),
+    [(sort): void => this.saveSort(sort)]
+  );
+  private page = new Signal(
+    () => this.getInitialPage(),
+    [(page): void => this.savePage(page)]
+  );
 
   private title = new Component({
     tag: 'h1',
@@ -27,12 +36,17 @@ export class WinnersPage extends Page {
   private winnersSection = new WinnersSection({
     onPrevPageClick: (): void => this.page.set(this.page.get() - 1),
     onNextPageClick: (): void => this.page.set(this.page.get() + 1),
+    onSortChange: (sort): void => {
+      if (!isWinnersSortableFields(sort.column)) return;
+
+      this.tableSort.set({ sort: sort.column, order: sort.order });
+    },
   });
 
   private winnersQuery = new Query({
-    callback: (arguments_): Promise<PaginationResponse<WinnerWithCar>> =>
-      WinnersApiService.winners(arguments_),
-    defaultArgs: { page: this.page.get() },
+    callback: (props): Promise<PaginationResponse<WinnerWithCar>> =>
+      WinnersApiService.winners(props),
+    defaultArgs: { page: this.page.get(), sort: this.tableSort.get() },
     onSuccess: (response): void => {
       this.winnersSection.render(response);
       this.title.setText(this.getTitleCopy(response.meta.totalCount));
@@ -42,7 +56,12 @@ export class WinnersPage extends Page {
   constructor(config: PageConfig) {
     super(config);
 
-    this.page.subscribe((page) => this.winnersQuery.refetch({ page }));
+    this.page.subscribe((page) =>
+      this.winnersQuery.refetch({ page, sort: this.tableSort.get() })
+    );
+    this.tableSort.subscribe((sort) =>
+      this.winnersQuery.refetch({ page: this.page.get(), sort })
+    );
   }
 
   public render(): void {
@@ -53,5 +72,37 @@ export class WinnersPage extends Page {
 
   private getTitleCopy(totalCount?: number): string {
     return `Winners ${totalCount ? `(${totalCount})` : ''}`;
+  }
+
+  private getInitialSort(): WinnersRequestSort | null {
+    const lastSort = LocalStorageService.get(LS_WINNERS_LAST_SORT);
+
+    if (typeof lastSort !== 'object') return null;
+    if (lastSort === null) return null;
+    if (!('sort' in lastSort) || !('order' in lastSort)) return null;
+
+    const order = isSortOrder(lastSort.order) ? lastSort.order : undefined;
+    const sort = isWinnersSortableFields(lastSort.sort)
+      ? lastSort.sort
+      : undefined;
+
+    if (typeof sort === 'undefined' || typeof order === 'undefined')
+      return null;
+
+    return { order, sort };
+  }
+
+  private getInitialPage(): number {
+    const page = LocalStorageService.get(LS_WINNERS_LAST_PAGE);
+
+    return Number.isNaN(Number(page)) ? PAGINATION_DEFAULT_PAGE : Number(page);
+  }
+
+  private savePage(page: number): void {
+    LocalStorageService.set(LS_WINNERS_LAST_PAGE, page);
+  }
+
+  private saveSort(sort: WinnersRequestSort | null): void {
+    LocalStorageService.set(LS_WINNERS_LAST_SORT, sort);
   }
 }

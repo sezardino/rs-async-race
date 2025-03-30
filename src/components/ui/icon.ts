@@ -7,7 +7,7 @@ export type IconConfig = Omit<ComponentConfig, 'tag' | 'textContent'> & {
 
 export class Icon extends Component<HTMLSpanElement> {
   constructor(config: IconConfig) {
-    super(config);
+    super({ ...config, tag: 'span' });
 
     this.render(config.content);
   }

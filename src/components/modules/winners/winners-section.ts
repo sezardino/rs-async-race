@@ -6,7 +6,7 @@ import { Component } from '../../abstract';
 import { div, h2, header } from '../../base';
 import { Button } from '../../ui/button';
 import { Icon } from '../../ui/icon';
-import type { ColumnConfig } from '../../ui/table';
+import type { ColumnConfig, TableSort } from '../../ui/table';
 import { Table } from '../../ui/table';
 
 import CarIcon from '../../../assets/car.svg?raw';
@@ -17,6 +17,8 @@ export type WinnersSectionConfig = Omit<
 > & {
   onNextPageClick: () => void;
   onPrevPageClick: () => void;
+  onSortChange: (sort: TableSort) => void;
+  initialSort?: TableSort;
 };
 
 export class WinnersSection extends Component {
@@ -25,10 +27,14 @@ export class WinnersSection extends Component {
   private onNextPageClick: () => void;
   private onPrevPageClick: () => void;
 
+  private winnersTable: Table<WinnerWithCar>;
+
   constructor(config: WinnersSectionConfig) {
     const {
       onNextPageClick,
       onPrevPageClick,
+      onSortChange,
+      initialSort,
       classNames = [],
       ...rest
     } = config;
@@ -37,6 +43,8 @@ export class WinnersSection extends Component {
       tag: 'section',
       classNames: [...classNames, 'flex flex-col gap-8'],
     });
+
+    this.winnersTable = this.getTable(onSortChange, initialSort);
 
     this.onNextPageClick = onNextPageClick;
     this.onPrevPageClick = onPrevPageClick;
@@ -55,10 +63,10 @@ export class WinnersSection extends Component {
       response.meta.totalPages
     );
 
-    const table = this.getTable(response);
+    this.winnersTable.setData(response.data);
 
     header.append(headerPagination);
-    this.append(header, table, footerPagination);
+    this.append(header, this.winnersTable, footerPagination);
   }
 
   private cleanSection(): void {
@@ -111,13 +119,15 @@ export class WinnersSection extends Component {
   }
 
   private getTable(
-    response: PaginationResponse<WinnerWithCar>
+    onSortChange: (sort: TableSort) => void,
+    initialSort?: TableSort
   ): Table<WinnerWithCar> {
     const columns: ColumnConfig<WinnerWithCar>[] = [
       {
-        name: 'number',
-        header: () => 'Number',
+        name: 'id',
+        header: () => 'ID',
         column: ({ original }) => original.id.toString(),
+        sortable: true,
       },
       {
         name: 'car',
@@ -141,14 +151,21 @@ export class WinnersSection extends Component {
         name: 'wins',
         header: () => 'Wins',
         column: ({ original }) => original.wins.toString(),
+        sortable: true,
       },
       {
-        name: 'best-time',
+        name: 'time',
         header: () => 'Best time (seconds)',
         column: ({ original }) => original.time.toString(),
+        sortable: true,
       },
     ];
 
-    return new Table({ data: response.data, columns });
+    return new Table({
+      data: [],
+      columns,
+      onSort: onSortChange,
+      initialSort,
+    });
   }
 }

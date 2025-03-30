@@ -1,10 +1,23 @@
 import type { WinnerEntity } from '../../types/entity';
 import type { PaginationRequest } from '../../types/pagination';
 import type { SortOrder } from '../../types/parameters';
+import type { WINNERS_SORT_FIELDS } from './const';
+
+export type WinnersSortableFields = (typeof WINNERS_SORT_FIELDS)[number];
+
+export const isWinnersSortableFields = (
+  value: unknown
+): value is WinnersSortableFields => {
+  return value === 'id' || value === 'wins' || value === 'time';
+};
+
+export type WinnersRequestSort = {
+  sort: WinnersSortableFields;
+  order: SortOrder;
+};
 
 export type WinnersRequest = PaginationRequest & {
-  sort?: 'id' | 'wins' | 'time';
-  order?: SortOrder;
+  sort: WinnersRequestSort | null;
 };
 
 export type WinnersResponse = WinnerEntity[];

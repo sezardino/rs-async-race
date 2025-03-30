@@ -25,15 +25,14 @@ export class WinnersApiService {
     const {
       limit = PAGINATION_DEFAULT_LIMIT,
       page = PAGINATION_DEFAULT_PAGE,
-      order,
       sort,
     } = dto;
 
     const parameters: FetchAcceptedData = { _page: page, _limit: limit };
 
-    if (sort && order) {
-      parameters.sort = sort;
-      parameters.order = order;
+    if (sort && sort.order && sort.sort) {
+      parameters._sort = sort.sort;
+      parameters._order = sort.order;
     }
 
     return fetchInstance
