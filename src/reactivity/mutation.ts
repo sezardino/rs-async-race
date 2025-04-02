@@ -1,56 +1,42 @@
 import { Signal } from './signal';
 
-type QueryConfig<T, A extends object> = {
-  callback: (arguments_: A) => Promise<T>;
-  defaultArgs: A;
+type MutationConfig<T, A extends object> = {
+  mutateFn: (arguments_: A) => Promise<T>;
   onSuccess?: (data: T) => void;
   onError?: (error: Error) => void;
   onLoading?: () => void;
 };
 
-export class Query<T, A extends object> {
-  public data: Signal<T | null>;
+export class Mutation<T, A extends object> {
   public isLoading: Signal<boolean>;
   public isError: Signal<boolean>;
   private error: Signal<Error | null>;
-  private callback: (arguments_: A) => Promise<T>;
+  private mutateFn: (arguments_: A) => Promise<T>;
 
   private onSuccess?: (data: T) => void;
   private onError?: (error: Error) => void;
   private onLoading?: () => void;
 
-  private lastArgs?: A;
-
-  constructor(config: QueryConfig<T, A>) {
-    this.callback = config.callback;
-    this.lastArgs = config.defaultArgs;
+  constructor(config: MutationConfig<T, A>) {
+    this.mutateFn = config.mutateFn;
     this.onSuccess = config.onSuccess;
     this.onError = config.onError;
     this.onLoading = config.onLoading;
 
-    this.data = new Signal<T | null>(null);
     this.isLoading = new Signal<boolean>(false);
     this.isError = new Signal<boolean>(false);
     this.error = new Signal<Error | null>(null);
-
-    void this.fetchData(config.defaultArgs);
   }
 
-  public refetch(newArguments?: A): void {
-    void this.fetchData(newArguments ?? this.lastArgs!);
-  }
-
-  private async fetchData(arguments_: A): Promise<void> {
+  public async mutate(arguments_: A): Promise<void> {
     this.isLoading.set(true);
     this.isError.set(false);
     this.error.set(null);
-    this.lastArgs = arguments_;
 
     if (this.onLoading) this.onLoading();
 
     try {
-      const result = await this.callback(arguments_);
-      this.data.set(result);
+      const result = await this.mutateFn(arguments_);
 
       if (this.onSuccess) this.onSuccess(result);
     } catch (error) {
