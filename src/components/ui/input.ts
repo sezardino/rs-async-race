@@ -6,7 +6,7 @@ type PickedComponentProps = Pick<ComponentConfig, 'classNames' | 'attributes'>;
 
 export type InputConfig = PickedComponentProps & {
   size?: InputSize;
-  type?: 'text' | 'number';
+  type?: 'text' | 'color';
   placeholder?: string;
   name: string;
 };
@@ -28,7 +28,12 @@ export class Input extends Component {
     super({
       ...restConfig,
       tag: 'input',
-      classNames: [DEFAULT_INPUT_STYLES, INPUT_SIZES[size], ...classNames],
+      classNames: [
+        DEFAULT_INPUT_STYLES,
+        INPUT_SIZES[size],
+        type === 'color' && 'h-10 p-0.5',
+        ...classNames,
+      ],
       attributes: { ...attributes, name, type, placeholder },
     });
 

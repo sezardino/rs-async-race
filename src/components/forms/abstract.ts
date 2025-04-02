@@ -3,39 +3,30 @@ import { Component } from '../abstract';
 import type { FormFieldConfig } from '../ui/form-field';
 import { FormField } from '../ui/form-field';
 
-export type FormConfiguration<Values extends object> = Omit<
-  ComponentConfig,
-  'tag'
-> & {
-  initialValues?: Values;
+export type FormConfig<Values extends object> = Omit<ComponentConfig, 'tag'> & {
   onSubmit: (values: Values) => void;
-  onUpdateField?: () => void;
+  initialValues?: Partial<Values>;
 };
 
-export class Form<Values extends object> extends Component {
-  protected values: Values = {} as Values;
-  protected fields: Record<string, FormField> = {};
+export class Form<Values extends Record<string, string>> extends Component {
+  protected fields: Record<keyof Values, FormField> = {} as Record<
+    keyof Values,
+    FormField
+  >;
+  private initialValues?: Partial<Values>;
   private onSubmit: (values: Values) => void;
-  // private onUpdateField?: () => void;
   private error: Component | null = null;
 
-  constructor(config: FormConfiguration<Values>) {
-    const {
-      initialValues,
-      onSubmit,
-      // onUpdateField,
-      ...restConfig
-    } = config;
+  constructor(config: FormConfig<Values>) {
+    const { initialValues, onSubmit, ...restConfig } = config;
 
     super({
       tag: 'form',
       ...restConfig,
     });
 
-    if (initialValues) this.values = initialValues;
-
     this.onSubmit = onSubmit;
-    // this.onUpdateField = onUpdateField;
+    this.initialValues = initialValues;
 
     this.on('submit', (event) => this.submitHandler(event));
   }
@@ -44,27 +35,22 @@ export class Form<Values extends object> extends Component {
     throw new Error(`Method should be implemented, ${JSON.stringify(values)}`);
   }
 
-  public getValues(): Values {
-    return this.values;
+  public toggleDisabled(value: boolean): void {
+    Object.values(this.fields).forEach((field) =>
+      field.setAttribute('disabled', value ? 'true' : '')
+    );
   }
 
-  // TODO: refactor this method
-  // protected setFieldValue(name: string, value: string): void {
-  //   // editObjectFieldByPath(this.values, name, value);
-
-  //   this.onUpdateField?.();
-  // }
-
-  // TODO: refactor this method
   protected registerField(
-    config: FormFieldConfig,
-    initialValue: string
+    name: Extract<keyof Values, string>,
+    config: Omit<FormFieldConfig, 'name'>
   ): FormField {
-    const field = new FormField(config);
+    const field = new FormField({ ...config, name });
 
-    this.fields[field.name] = field;
-    // editObjectFieldByPath(this.values, field.name, initialValue);
-    field.setValue(initialValue);
+    this.fields[name] = field;
+    const initialValue = this.initialValues?.[name];
+    if (initialValue) field.setValue(initialValue);
+
     field.on('input', (event) => {
       const currentTarget = event.currentTarget;
 
@@ -73,23 +59,19 @@ export class Form<Values extends object> extends Component {
         !(currentTarget instanceof HTMLTextAreaElement)
       )
         return;
-
-      // this.setFieldValue(field.name, currentTarget?.value);
     });
 
     return field;
   }
 
-  // TODO: refactor this method
-  // protected deleteValue(name: string): void {
-  //   // deleteObjectFieldByPath(this.values, name);
-  // }
+  protected unregisterField(name: Extract<keyof Values, string>): void {
+    const field = this.fields[name];
 
-  // TODO: refactor this method
-  // protected unregisterField(name: string): void {
-  //   // deleteObjectFieldByPath(this.fields, name);
-  //   // deleteObjectFieldByPath(this.values, name);
-  // }
+    if (!field) return;
+
+    field.destroy();
+    delete this.fields[name];
+  }
 
   protected setFormError(error: string): void {
     if (this.error) this.error.element.remove();
@@ -103,7 +85,10 @@ export class Form<Values extends object> extends Component {
     this.error.appendTo(this.element);
   }
 
-  protected setFieldError(name: string, error: string): void {
+  protected setFieldError(
+    name: Extract<keyof Values, string>,
+    error: string
+  ): void {
     const field = this.fields[name];
 
     if (!field) return;
@@ -118,13 +103,22 @@ export class Form<Values extends object> extends Component {
   private submitHandler(event: Event): void {
     event.preventDefault();
 
-    const values = this.values;
+    const currentTarget = event.currentTarget;
+
+    if (!(currentTarget instanceof HTMLFormElement)) return;
+
+    const formData = new FormData(currentTarget);
+    const values: Partial<Values> = {};
+
+    formData.forEach((value, key) => {
+      values[key as keyof Values] = value as Values[keyof Values];
+    });
 
     this.clearErrors();
-    const validationResponse = this.validate(values);
+    const validationResponse = this.validate(values as Values);
 
     if (!validationResponse) return;
 
-    this.onSubmit(values);
+    this.onSubmit(values as Values);
   }
 }

@@ -2,26 +2,20 @@ import type { ClassValue } from 'clsx';
 import { Component } from '../abstract';
 import type { InputConfig } from './input';
 import { Input } from './input';
-import type { TextareaConfig } from './textarea';
-import { Textarea } from './textarea';
 
 type InputFieldConfig = InputConfig & {
   variant: 'input';
-};
-
-type TextareaFieldConfig = TextareaConfig & {
-  variant: 'textarea';
 };
 
 export type FormFieldConfig = {
   label?: string;
   name: string;
   description?: string;
-} & (InputFieldConfig | TextareaFieldConfig);
+} & InputFieldConfig;
 
 export class FormField extends Component {
   public name: string;
-  public field: Input | Textarea | null = null;
+  public field: Input | null = null;
   private error: Component | null = null;
   private fieldId: string = crypto.randomUUID();
   private descriptionId = `${this.fieldId}-description`;
@@ -71,7 +65,7 @@ export class FormField extends Component {
   public removeErrorMessage(): void {
     if (!this.error) return;
 
-    // this.error.remove();
+    this.error.clean();
 
     this.field?.setAttribute('aria-invalid', '');
     this.field?.setAttribute('aria-errormessage', '');
@@ -103,7 +97,6 @@ export class FormField extends Component {
   }
 
   private renderInput({
-    variant,
     ...config
   }: Omit<FormFieldConfig, 'name' | 'label' | 'description'>): void {
     const initialConfig = {
@@ -112,10 +105,7 @@ export class FormField extends Component {
       attributes: { id: this.fieldId, ...config.attributes },
     };
 
-    this.field =
-      variant === 'input'
-        ? new Input(initialConfig)
-        : new Textarea(initialConfig);
+    this.field = new Input(initialConfig);
 
     this.field.appendTo(this.element);
   }

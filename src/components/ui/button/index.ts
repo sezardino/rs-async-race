@@ -57,7 +57,7 @@ class AbstractButton extends Component {
 }
 
 export type ButtonConfig = Omit<AbstractButtonConfig, 'tag'> & {
-  type?: 'submit' | 'button';
+  type?: 'submit' | 'button' | 'reset';
 };
 
 export class Button extends AbstractButton {

@@ -1,5 +1,6 @@
 import { GarageApiService } from '../bll/garage';
 import { Component } from '../components/abstract';
+import { CarFormSection } from '../components/modules/garage/car-form-section';
 import { CarsSection } from '../components/modules/garage/cars-section';
 import { LS_GARAGE_LAST_PAGE } from '../const/local-storage';
 import { PAGINATION_DEFAULT_PAGE } from '../const/pagination';
@@ -17,14 +18,21 @@ export class GaragePage extends Page {
 
     return Number.isNaN(Number(page)) ? PAGINATION_DEFAULT_PAGE : Number(page);
   }, [(value): void => LocalStorageService.set(LS_GARAGE_LAST_PAGE, value)]);
-  private carsSection = new CarsSection({
-    onPrevPageClick: (): void => this.page.set(this.page.get() - 1),
-    onNextPageClick: (): void => this.page.set(this.page.get() + 1),
-  });
+
   private title = new Component({
     tag: 'h1',
     textContent: this.getTitleCopy(),
-    classNames: ['text-2xl font-bold'],
+    classNames: ['mt-10 text-2xl font-bold'],
+  });
+
+  private carFormSection = new CarFormSection({
+    submitCopy: 'Create Car',
+    onFormSubmit: console.log,
+  });
+
+  private carsSection = new CarsSection({
+    onPrevPageClick: (): void => this.page.set(this.page.get() - 1),
+    onNextPageClick: (): void => this.page.set(this.page.get() + 1),
   });
 
   private garageQuery = new Query({
@@ -46,7 +54,7 @@ export class GaragePage extends Page {
   public render(): void {
     this.root.addClasses('py-10');
 
-    this.root.append(this.title, this.carsSection);
+    this.root.append(this.carFormSection, this.title, this.carsSection);
   }
 
   private getTitleCopy(totalCount?: number): string {
