@@ -1,4 +1,3 @@
-import { WinnersApiService } from '../bll/winners';
 import type { WinnersRequestSort } from '../bll/winners/types';
 import { isWinnersSortableFields } from '../bll/winners/types';
 import { Component } from '../components/abstract';
@@ -8,11 +7,9 @@ import {
   LS_WINNERS_LAST_SORT,
 } from '../const/local-storage';
 import { PAGINATION_DEFAULT_PAGE } from '../const/pagination';
-import { Query } from '../reactivity/query';
+import { useWinnersQuery } from '../reactivity/queries/winners';
 import { Signal } from '../reactivity/signal';
 import { LocalStorageService } from '../services/local-storage';
-import type { WinnerWithCar } from '../types/entity';
-import type { PaginationResponse } from '../types/pagination';
 import { isSortOrder } from '../types/parameters';
 import type { PageConfig } from './abstract';
 import { Page } from './abstract';
@@ -32,6 +29,7 @@ export class WinnersPage extends Page {
     textContent: this.getTitleCopy(),
     classNames: ['text-2xl font-bold'],
   });
+
   private winnersSection = new WinnersSection({
     onPrevPageClick: (): void => this.page.set(this.page.get() - 1),
     onNextPageClick: (): void => this.page.set(this.page.get() + 1),
@@ -44,9 +42,7 @@ export class WinnersPage extends Page {
     initialSort: this.getInitialSort() || undefined,
   });
 
-  private winnersQuery = new Query({
-    callback: (props): Promise<PaginationResponse<WinnerWithCar>> =>
-      WinnersApiService.winners(props),
+  private winnersQuery = useWinnersQuery({
     defaultArgs: { page: this.page.get(), sort: this.tableSort.get() },
     onSuccess: (response): void => {
       this.winnersSection.render(response);

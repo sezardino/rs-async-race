@@ -1,14 +1,11 @@
-import { GarageApiService } from '../bll/garage';
 import { Component } from '../components/abstract';
 import { CarFormSection } from '../components/modules/garage/car-form-section';
 import { CarsSection } from '../components/modules/garage/cars-section';
 import { LS_GARAGE_LAST_PAGE } from '../const/local-storage';
 import { PAGINATION_DEFAULT_PAGE } from '../const/pagination';
-import { Query } from '../reactivity/query';
+import { useGarageQuery } from '../reactivity/queries/garage';
 import { Signal } from '../reactivity/signal';
 import { LocalStorageService } from '../services/local-storage';
-import type { CarEntity } from '../types/entity';
-import type { PaginationResponse } from '../types/pagination';
 import type { PageConfig } from './abstract';
 import { Page } from './abstract';
 
@@ -35,9 +32,7 @@ export class GaragePage extends Page {
     onNextPageClick: (): void => this.page.set(this.page.get() + 1),
   });
 
-  private garageQuery = new Query({
-    callback: (arguments_): Promise<PaginationResponse<CarEntity>> =>
-      GarageApiService.cars(arguments_),
+  private garageQuery = useGarageQuery({
     defaultArgs: { page: this.page.get() },
     onSuccess: (response): void => {
       this.carsSection.render(response);

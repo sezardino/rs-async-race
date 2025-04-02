@@ -1,6 +1,6 @@
 import { Signal } from './signal';
 
-type QueryConfig<T, A extends object> = {
+export type QueryConfig<T, A extends object> = {
   callback: (arguments_: A) => Promise<T>;
   defaultArgs: A;
   onSuccess?: (data: T) => void;
