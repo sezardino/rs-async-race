@@ -4,7 +4,7 @@ import type { FormFieldConfig } from '../ui/form-field';
 import { FormField } from '../ui/form-field';
 
 export type FormConfig<Values extends object> = Omit<ComponentConfig, 'tag'> & {
-  onSubmit: (values: Values) => void;
+  onSubmit: (values: Values) => Promise<void> | void;
   initialValues?: Partial<Values>;
 };
 
@@ -14,7 +14,7 @@ export class Form<Values extends Record<string, string>> extends Component {
     FormField
   >;
   private initialValues?: Partial<Values>;
-  private onSubmit: (values: Values) => void;
+  private onSubmit: (values: Values) => Promise<void> | void;
   private error: Component | null = null;
 
   constructor(config: FormConfig<Values>) {
@@ -28,7 +28,11 @@ export class Form<Values extends Record<string, string>> extends Component {
     this.onSubmit = onSubmit;
     this.initialValues = initialValues;
 
-    this.on('submit', (event) => this.submitHandler(event));
+    this.on('submit', (event) => void this.submitHandler(event));
+    this.on('reset', (event) => {
+      event.preventDefault();
+      this.resetFields();
+    });
   }
 
   public validate(values: Values): boolean {
@@ -100,7 +104,7 @@ export class Form<Values extends Record<string, string>> extends Component {
     Object.values(this.fields).forEach((f) => f.removeErrorMessage());
   }
 
-  private submitHandler(event: Event): void {
+  private async submitHandler(event: Event): Promise<void> {
     event.preventDefault();
 
     const currentTarget = event.currentTarget;
@@ -119,6 +123,13 @@ export class Form<Values extends Record<string, string>> extends Component {
 
     if (!validationResponse) return;
 
-    this.onSubmit(values as Values);
+    await this.onSubmit(values as Values);
+    this.resetFields();
+  }
+
+  private resetFields(): void {
+    Object.values(this.fields).forEach((field) =>
+      field.setValue(this.initialValues?.[field.name] || '')
+    );
   }
 }
