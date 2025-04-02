@@ -147,8 +147,8 @@ const generateWinners = (count) => {
 };
 
 const db = {
-  garage: generateCars(1000),
-  winners: generateWinners(1000),
+  garage: generateCars(5),
+  winners: generateWinners(5),
 };
 
 const server = jsonServer.create();

@@ -1,23 +1,23 @@
 import { Signal } from './signal';
 
-type MutationConfig<T, A extends object> = {
-  mutateFn: (arguments_: A) => Promise<T>;
-  onSuccess?: (data: T) => void;
+export type MutationConfig<Response, Props extends object> = {
+  mutateFn: (arguments_: Props) => Promise<Response>;
+  onSuccess?: (data: Response) => void;
   onError?: (error: Error) => void;
   onLoading?: () => void;
 };
 
-export class Mutation<T, A extends object> {
+export class Mutation<Response, Props extends object> {
   public isLoading: Signal<boolean>;
   public isError: Signal<boolean>;
   private error: Signal<Error | null>;
-  private mutateFn: (arguments_: A) => Promise<T>;
+  private mutateFn: (arguments_: Props) => Promise<Response>;
 
-  private onSuccess?: (data: T) => void;
+  private onSuccess?: (data: Response) => void;
   private onError?: (error: Error) => void;
   private onLoading?: () => void;
 
-  constructor(config: MutationConfig<T, A>) {
+  constructor(config: MutationConfig<Response, Props>) {
     this.mutateFn = config.mutateFn;
     this.onSuccess = config.onSuccess;
     this.onError = config.onError;
@@ -28,7 +28,7 @@ export class Mutation<T, A extends object> {
     this.error = new Signal<Error | null>(null);
   }
 
-  public async mutate(arguments_: A): Promise<void> {
+  public async mutate(props: Props): Promise<void> {
     this.isLoading.set(true);
     this.isError.set(false);
     this.error.set(null);
@@ -36,7 +36,7 @@ export class Mutation<T, A extends object> {
     if (this.onLoading) this.onLoading();
 
     try {
-      const result = await this.mutateFn(arguments_);
+      const result = await this.mutateFn(props);
 
       if (this.onSuccess) this.onSuccess(result);
     } catch (error) {

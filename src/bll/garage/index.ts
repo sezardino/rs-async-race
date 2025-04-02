@@ -12,7 +12,6 @@ import type {
   CarsRequest,
   CarsResponse,
   CreateCarRequest,
-  CreateCarResponse,
   UpdateCarRequest,
   UpdateCarResponse,
 } from './types';
@@ -35,10 +34,8 @@ export class GarageApiService {
     return fetchInstance.get<CarResponse>(`/garage/${id}`);
   }
 
-  public static createCar(
-    dto: CreateCarRequest
-  ): Promise<FetchResponse<CreateCarResponse>> {
-    return fetchInstance.post<CreateCarResponse>('/garage', { body: dto });
+  public static createCar(dto: CreateCarRequest): Promise<FetchResponse<void>> {
+    return fetchInstance.post<void>('/garage', { body: dto });
   }
 
   public static updateCar({
