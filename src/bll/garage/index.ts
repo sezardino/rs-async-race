@@ -7,11 +7,13 @@ import type { PaginationResponse } from '../../types/pagination';
 import { generatePaginationResponse } from '../../utils/generate-pagination-response';
 import type { FetchResponse } from '../../utils/request';
 import { fetchInstance } from '../../utils/request';
+import { WinnersApiService } from '../winners';
 import type {
   CarResponse,
   CarsRequest,
   CarsResponse,
   CreateCarRequest,
+  DeleteCarRequest,
   UpdateCarRequest,
   UpdateCarResponse,
 } from './types';
@@ -47,7 +49,11 @@ export class GarageApiService {
     });
   }
 
-  public static deleteCar(carId: number): Promise<FetchResponse<void>> {
-    return fetchInstance.delete<void>(`/garage/${carId}`);
+  public static deleteCar({
+    carId,
+  }: DeleteCarRequest): Promise<FetchResponse<void>> {
+    return fetchInstance
+      .delete<void>(`/garage/${carId}`)
+      .then(() => WinnersApiService.deleteWinner({ winnerId: carId }));
   }
 }

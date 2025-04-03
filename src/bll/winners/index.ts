@@ -11,6 +11,7 @@ import { GarageApiService } from '../garage';
 import type {
   CreateWinnerRequest,
   CreateWinnerResponse,
+  DeleteWinnerRequest,
   EditWinnerRequest,
   EditWinnerResponse,
   WinnerResponse,
@@ -82,7 +83,9 @@ export class WinnersApiService {
     });
   }
 
-  public static deleteWinner(winnerId: number): Promise<FetchResponse<void>> {
+  public static deleteWinner({
+    winnerId,
+  }: DeleteWinnerRequest): Promise<FetchResponse<void>> {
     return fetchInstance.delete<void>(`/winners/${winnerId}`);
   }
 }

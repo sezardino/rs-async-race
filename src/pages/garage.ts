@@ -1,9 +1,11 @@
 import { Component } from '../components/abstract';
 import { CarFormSection } from '../components/modules/garage/car-form-section';
 import { CarsSection } from '../components/modules/garage/cars-section';
+import { ConfirmDialog } from '../components/ui/confirm-dialog';
 import { LS_GARAGE_LAST_PAGE } from '../const/local-storage';
 import { PAGINATION_DEFAULT_PAGE } from '../const/pagination';
 import { useCreateCarMutation } from '../reactivity/mutations/create-car';
+import { useDeleteCarMutation } from '../reactivity/mutations/delete-car';
 import { useGarageQuery } from '../reactivity/queries/garage';
 import { Signal } from '../reactivity/signal';
 import { LocalStorageService } from '../services/local-storage';
@@ -28,6 +30,34 @@ export class GaragePage extends Page {
   private createCarMutation = useCreateCarMutation({
     onSuccess: () => this.garageQuery.refetch(),
   });
+  private deleteCarMutation = useDeleteCarMutation({
+    onSuccess: () => {
+      this.garageQuery.refetch();
+      this.carToDelete.set(null);
+    },
+  });
+
+  private carToDelete = new Signal<number | null>(null, [
+    (value): void =>
+      typeof value === 'number'
+        ? this.deleteCarDialog.openDialog()
+        : this.deleteCarDialog.closeDialog(),
+  ]);
+
+  private deleteCarDialog = new ConfirmDialog({
+    cancelText: 'Cancel',
+    confirmText: 'Delete',
+    confirmColor: 'red',
+    title: 'Are you sure?',
+    description: 'This action cant be undone',
+    onConfirm: async (): Promise<void> => {
+      const carId = this.carToDelete.get();
+
+      if (!carId) return this.deleteCarDialog.closeDialog();
+
+      await this.deleteCarMutation.mutate({ carId });
+    },
+  });
 
   private title = new Component({
     tag: 'h1',
@@ -41,6 +71,7 @@ export class GaragePage extends Page {
   });
 
   private carsSection = new CarsSection({
+    onSelectCarToDelete: (carId): void => this.carToDelete.set(carId),
     onPrevPageClick: (): void => this.page.set(this.page.get() - 1),
     onNextPageClick: (): void => this.page.set(this.page.get() + 1),
   });

@@ -13,6 +13,7 @@ import FlagIcon from '../../../assets/flag.svg?raw';
 export type CarsSectionConfig = Omit<ComponentConfig, 'tag' | 'textContent'> & {
   onNextPageClick: () => void;
   onPrevPageClick: () => void;
+  onSelectCarToDelete: (carId: number) => void;
 };
 
 export class CarsSection extends Component {
@@ -20,9 +21,11 @@ export class CarsSection extends Component {
 
   private onNextPageClick: () => void;
   private onPrevPageClick: () => void;
+  private onSelectCarToDelete: (carId: number) => void;
 
   constructor(config: CarsSectionConfig) {
     const {
+      onSelectCarToDelete,
       onNextPageClick,
       onPrevPageClick,
       classNames = [],
@@ -36,6 +39,7 @@ export class CarsSection extends Component {
 
     this.onNextPageClick = onNextPageClick;
     this.onPrevPageClick = onPrevPageClick;
+    this.onSelectCarToDelete = onSelectCarToDelete;
   }
 
   public render(response: PaginationResponse<CarEntity>): void {
@@ -131,6 +135,7 @@ export class CarsSection extends Component {
       textContent: 'Remove',
       size: 'xs',
       color: 'dark',
+      onClick: (): void => this.onSelectCarToDelete(car.id),
     });
     const name = h3({
       textContent: car.name,

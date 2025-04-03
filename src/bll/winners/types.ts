@@ -29,7 +29,11 @@ export type CreateWinnerRequest = Pick<WinnerEntity, 'id' | 'time' | 'wins'>;
 export type CreateWinnerResponse = WinnerEntity;
 
 export type EditWinnerRequest = Partial<Omit<CreateWinnerRequest, 'id'>> & {
-  winnerId: string;
+  winnerId: number;
+};
+
+export type DeleteWinnerRequest = {
+  winnerId: number;
 };
 
 export type EditWinnerResponse = WinnerEntity;

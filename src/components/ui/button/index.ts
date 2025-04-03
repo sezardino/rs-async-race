@@ -15,6 +15,7 @@ type AbstractButtonConfig = Pick<
   tag: 'button' | 'a';
   color?: ButtonColor;
   size?: ButtonSizes;
+  onClick?: () => Promise<void> | void;
 };
 
 class AbstractButton extends Component {
@@ -25,6 +26,7 @@ class AbstractButton extends Component {
       tag,
       color = 'default',
       size = 'base',
+      onClick,
       classNames,
       textContent,
       attributes,
@@ -43,6 +45,8 @@ class AbstractButton extends Component {
     });
 
     this.color = color;
+
+    if (onClick) this.on('click', () => void onClick());
   }
 
   public changeColor(color: ButtonColor): void {

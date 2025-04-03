@@ -12,7 +12,11 @@ export type CreateCarRequest = Pick<CarEntity, 'name' | 'color'>;
 export type CreateCarResponse = CarEntity;
 
 export type UpdateCarRequest = Partial<CreateCarRequest> & {
-  carId: string;
+  carId: number;
+};
+
+export type DeleteCarRequest = {
+  carId: number;
 };
 
 export type UpdateCarResponse = CarEntity;
