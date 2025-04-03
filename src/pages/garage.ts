@@ -1,6 +1,8 @@
 import { Component } from '../components/abstract';
-import { CarFormSection } from '../components/modules/garage/car-form-section';
+import { header } from '../components/base';
+import { CarFormDialog } from '../components/modules/garage/car-form-dialog';
 import { CarsSection } from '../components/modules/garage/cars-section';
+import { Button } from '../components/ui/button';
 import { ConfirmDialog } from '../components/ui/confirm-dialog';
 import { LS_GARAGE_LAST_PAGE } from '../const/local-storage';
 import { PAGINATION_DEFAULT_PAGE } from '../const/pagination';
@@ -62,12 +64,13 @@ export class GaragePage extends Page {
   private title = new Component({
     tag: 'h1',
     textContent: this.getTitleCopy(),
-    classNames: ['mt-10 text-2xl font-bold'],
+    classNames: ['text-2xl font-bold'],
   });
 
-  private carFormSection = new CarFormSection({
+  private carFormDialog = new CarFormDialog({
     submitCopy: 'Create Car',
-    onFormSubmit: (values): void => void this.createCarMutation.mutate(values),
+    onFormSubmit: (values): Promise<void> =>
+      this.createCarMutation.mutate(values),
   });
 
   private carsSection = new CarsSection({
@@ -85,7 +88,19 @@ export class GaragePage extends Page {
   public render(): void {
     this.root.addClasses('py-10');
 
-    this.root.append(this.carFormSection, this.title, this.carsSection);
+    const addCarButton = new Button({
+      textContent: '+ Add car',
+      size: 'xs',
+      onClick: (): void => this.carFormDialog.openDialog(),
+    });
+
+    const headerWrapper = header({
+      classNames: ['flex items-center flex-wrap justify-between'],
+    });
+
+    headerWrapper.append(this.title, addCarButton);
+
+    this.root.append(headerWrapper, this.carsSection);
   }
 
   private getTitleCopy(totalCount?: number): string {
