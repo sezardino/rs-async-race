@@ -14,6 +14,7 @@ export type CarsSectionConfig = Omit<ComponentConfig, 'tag' | 'textContent'> & {
   onNextPageClick: () => void;
   onPrevPageClick: () => void;
   onSelectCarToDelete: (carId: number) => void;
+  onSelectCarToEdit: (carId: number) => void;
 };
 
 export class CarsSection extends Component {
@@ -22,10 +23,12 @@ export class CarsSection extends Component {
   private onNextPageClick: () => void;
   private onPrevPageClick: () => void;
   private onSelectCarToDelete: (carId: number) => void;
+  private onSelectCarToEdit: (carId: number) => void;
 
   constructor(config: CarsSectionConfig) {
     const {
       onSelectCarToDelete,
+      onSelectCarToEdit,
       onNextPageClick,
       onPrevPageClick,
       classNames = [],
@@ -40,6 +43,7 @@ export class CarsSection extends Component {
     this.onNextPageClick = onNextPageClick;
     this.onPrevPageClick = onPrevPageClick;
     this.onSelectCarToDelete = onSelectCarToDelete;
+    this.onSelectCarToEdit = onSelectCarToEdit;
   }
 
   public render(response: PaginationResponse<CarEntity>): void {
@@ -126,10 +130,11 @@ export class CarsSection extends Component {
 
     const wrapper = header({ classNames: ['flex items-center gap-4'] });
 
-    const select = new Button({
-      textContent: 'Select',
+    const edit = new Button({
+      textContent: 'Edit',
       size: 'xs',
       color: 'dark',
+      onClick: (): void => this.onSelectCarToEdit(car.id),
     });
     const remove = new Button({
       textContent: 'Remove',
@@ -142,7 +147,7 @@ export class CarsSection extends Component {
       classNames: ['text-lg font-medium'],
     });
 
-    wrapper.append(select, remove, name);
+    wrapper.append(edit, remove, name);
 
     const track = div({
       classNames: ['pb-1 flex items-end justify-between border-b-2 pr-10'],

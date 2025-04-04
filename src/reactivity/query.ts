@@ -33,7 +33,8 @@ export class Query<T, A extends object> {
     this.isError = new Signal<boolean>(false);
     this.error = new Signal<Error | null>(null);
 
-    void this.fetchData(config.defaultArgs);
+    if (Object.values(config.defaultArgs).length)
+      void this.fetchData(config.defaultArgs);
   }
 
   public refetch(newArguments?: A): void {

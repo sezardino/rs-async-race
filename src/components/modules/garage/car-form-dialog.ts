@@ -3,9 +3,10 @@ import { div, h2 } from '../../base';
 import type { CarFormValues } from '../../forms/car';
 import { CarForm } from '../../forms/car';
 import { Button } from '../../ui/button';
+import type { DialogConfig } from '../../ui/dialog';
 import { Dialog } from '../../ui/dialog';
 
-export type CarFormDialogConfig = {
+export type CarFormDialogConfig = Pick<DialogConfig, 'onClose'> & {
   initialValues?: CarFormValues;
   submitCopy: string;
   onFormSubmit: (values: CarFormValues) => Promise<void>;
@@ -15,7 +16,10 @@ export type CarFormDialogConfig = {
 export class CarFormDialog extends Dialog {
   private isFormDisabled = new Signal(false);
   private formId = crypto.randomUUID();
-  private form: CarForm;
+  private formWrapper = div();
+  private form?: CarForm;
+  private onFormSubmit: (values: CarFormValues) => Promise<void>;
+  private initialValues?: CarFormValues;
 
   private cancelButton: Button;
   private submitButton: Button;
@@ -25,15 +29,9 @@ export class CarFormDialog extends Dialog {
       config;
     super(rest);
 
-    this.form = new CarForm({
-      onSubmit: async (values): Promise<void> => {
-        await onFormSubmit(values);
-        this.closeDialog();
-      },
-      classNames: ['max-w-md'],
-      attributes: { id: this.formId },
-      initialValues,
-    });
+    this.onFormSubmit = onFormSubmit;
+    this.initialValues = initialValues;
+    this.form = this.renderForm(initialValues);
 
     this.cancelButton = new Button({
       type: 'reset',
@@ -57,8 +55,41 @@ export class CarFormDialog extends Dialog {
     this.isFormDisabled.subscribe((value) => this.toggleFormDisabled(value));
   }
 
+  public openDialog(initialValues?: Partial<CarFormValues>): void {
+    super.openDialog();
+
+    if (!initialValues) return;
+
+    this.renderForm(initialValues);
+  }
+
+  public closeDialog(): void {
+    super.closeDialog();
+
+    this.renderForm(this.initialValues);
+  }
+
   public setFormDisabled(value: boolean): void {
     this.isFormDisabled.set(value);
+  }
+
+  private renderForm(initialValues?: Partial<CarFormValues>): CarForm {
+    this.formWrapper?.clean();
+    const form = new CarForm({
+      onSubmit: async (values): Promise<void> => {
+        await this.onFormSubmit(values);
+        this.closeDialog();
+      },
+      classNames: ['max-w-md'],
+      attributes: { id: this.formId },
+      initialValues,
+    });
+
+    this.formWrapper.append(form);
+
+    this.form = form;
+
+    return form;
   }
 
   private render(submitCopy: string): void {
@@ -73,7 +104,8 @@ export class CarFormDialog extends Dialog {
     wrapper.append(this.cancelButton, this.submitButton);
 
     const content = div();
-    content.append(title, this.form, wrapper);
+
+    content.append(title, this.formWrapper, wrapper);
 
     this.setDialogContent(content.element);
   }
@@ -82,6 +114,6 @@ export class CarFormDialog extends Dialog {
     this.cancelButton.setAttribute('disabled', value ? 'true' : '');
     this.submitButton.setAttribute('disabled', value ? 'true' : '');
 
-    this.form.toggleDisabled(value);
+    this.form?.toggleDisabled(value);
   }
 }

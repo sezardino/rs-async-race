@@ -6,14 +6,16 @@ import { Button } from './button';
 export type DialogConfig = {
   dialog?: Omit<ComponentConfig, 'tag'>;
   trigger?: ButtonConfig;
+  onClose?: () => void;
 };
 
 const OVERFLOW_HIDDEN_CLASS_NAME = 'overflow-hidden';
 
 export class Dialog extends Component {
   private trigger?: Button;
+  private onClose?: () => void;
 
-  constructor({ ...config }: DialogConfig) {
+  constructor({ onClose, ...config }: DialogConfig) {
     super({
       ...config.dialog,
       tag: 'dialog',
@@ -23,6 +25,7 @@ export class Dialog extends Component {
     });
 
     this.trigger = config.trigger ? new Button(config.trigger) : undefined;
+    this.onClose = onClose;
     this.initEvents();
   }
 
@@ -40,6 +43,8 @@ export class Dialog extends Component {
     this.element.close();
     this.element.remove();
     document.body.classList.remove(OVERFLOW_HIDDEN_CLASS_NAME);
+
+    if (this.onClose) this.onClose();
   }
 
   public setOnOpen(callback: () => void): void {

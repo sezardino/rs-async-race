@@ -8,6 +8,7 @@ import { LS_GARAGE_LAST_PAGE } from '../const/local-storage';
 import { PAGINATION_DEFAULT_PAGE } from '../const/pagination';
 import { useCreateCarMutation } from '../reactivity/mutations/create-car';
 import { useDeleteCarMutation } from '../reactivity/mutations/delete-car';
+import { useUpdateCarMutation } from '../reactivity/mutations/update-car';
 import { useGarageQuery } from '../reactivity/queries/garage';
 import { Signal } from '../reactivity/signal';
 import { LocalStorageService } from '../services/local-storage';
@@ -32,6 +33,9 @@ export class GaragePage extends Page {
   private createCarMutation = useCreateCarMutation({
     onSuccess: () => this.garageQuery.refetch(),
   });
+  private updateCarMutation = useUpdateCarMutation({
+    onSuccess: () => this.garageQuery.refetch(),
+  });
   private deleteCarMutation = useDeleteCarMutation({
     onSuccess: () => {
       this.garageQuery.refetch();
@@ -44,6 +48,21 @@ export class GaragePage extends Page {
       typeof value === 'number'
         ? this.deleteCarDialog.openDialog()
         : this.deleteCarDialog.closeDialog(),
+  ]);
+
+  private carToEdit = new Signal<number | null>(null, [
+    (carId): void => {
+      const neededCar = this.garageQuery.data
+        .get()
+        ?.data.find((car) => car.id === carId);
+
+      if (!neededCar) return;
+
+      this.carFormDialog.openDialog({
+        color: neededCar.color,
+        name: neededCar.name,
+      });
+    },
   ]);
 
   private deleteCarDialog = new ConfirmDialog({
@@ -69,11 +88,20 @@ export class GaragePage extends Page {
 
   private carFormDialog = new CarFormDialog({
     submitCopy: 'Create Car',
-    onFormSubmit: (values): Promise<void> =>
-      this.createCarMutation.mutate(values),
+    onFormSubmit: async (values): Promise<void> => {
+      const carToEdit = this.carToEdit.get();
+
+      if (!carToEdit) await this.createCarMutation.mutate(values);
+      else {
+        await this.updateCarMutation.mutate({ ...values, carId: carToEdit });
+        this.carToEdit.set(null);
+      }
+    },
+    onClose: (): void => this.carToEdit.set(null),
   });
 
   private carsSection = new CarsSection({
+    onSelectCarToEdit: (carId): void => this.carToEdit.set(carId),
     onSelectCarToDelete: (carId): void => this.carToDelete.set(carId),
     onPrevPageClick: (): void => this.page.set(this.page.get() - 1),
     onNextPageClick: (): void => this.page.set(this.page.get() + 1),

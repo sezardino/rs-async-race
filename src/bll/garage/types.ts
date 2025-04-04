@@ -5,7 +5,11 @@ export type CarsRequest = PaginationRequest;
 
 export type CarsResponse = CarEntity[];
 
-export type CarResponse = CarEntity;
+export type CarDetailsRequest = {
+  carId: number;
+};
+
+export type CarDetailsResponse = CarEntity;
 
 export type CreateCarRequest = Pick<CarEntity, 'name' | 'color'>;
 
@@ -18,5 +22,3 @@ export type UpdateCarRequest = Partial<CreateCarRequest> & {
 export type DeleteCarRequest = {
   carId: number;
 };
-
-export type UpdateCarResponse = CarEntity;

@@ -9,13 +9,13 @@ import type { FetchResponse } from '../../utils/request';
 import { fetchInstance } from '../../utils/request';
 import { WinnersApiService } from '../winners';
 import type {
-  CarResponse,
+  CarDetailsRequest,
+  CarDetailsResponse,
   CarsRequest,
   CarsResponse,
   CreateCarRequest,
   DeleteCarRequest,
   UpdateCarRequest,
-  UpdateCarResponse,
 } from './types';
 
 export class GarageApiService {
@@ -32,8 +32,10 @@ export class GarageApiService {
       );
   }
 
-  public static car(id: number): Promise<FetchResponse<CarResponse>> {
-    return fetchInstance.get<CarResponse>(`/garage/${id}`);
+  public static car({
+    carId,
+  }: CarDetailsRequest): Promise<FetchResponse<CarDetailsResponse>> {
+    return fetchInstance.get<CarDetailsResponse>(`/garage/${carId}`);
   }
 
   public static createCar(dto: CreateCarRequest): Promise<FetchResponse<void>> {
@@ -43,8 +45,8 @@ export class GarageApiService {
   public static updateCar({
     carId,
     ...dto
-  }: UpdateCarRequest): Promise<FetchResponse<UpdateCarResponse>> {
-    return fetchInstance.put<UpdateCarResponse>(`/garage/${carId}`, {
+  }: UpdateCarRequest): Promise<FetchResponse<void>> {
+    return fetchInstance.put<void>(`/garage/${carId}`, {
       body: dto,
     });
   }

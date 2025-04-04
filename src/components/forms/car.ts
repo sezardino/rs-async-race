@@ -31,6 +31,7 @@ export class CarForm extends Form<CarFormValues> {
 
   public validate(values: CarFormValues): boolean {
     this.clearErrors();
+
     const isNameValid = values.name.trim().length > MIN_NAME_LENGTH;
     const isColorValid = COLOR_HEX_REGEXP.test(values.color);
 

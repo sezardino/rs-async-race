@@ -118,6 +118,8 @@ export class Form<Values extends Record<string, string>> extends Component {
       values[key as keyof Values] = value as Values[keyof Values];
     });
 
+    console.log(currentTarget);
+
     this.clearErrors();
     const validationResponse = this.validate(values as Values);
 
