@@ -1,5 +1,5 @@
 import { Component } from '../components/abstract';
-import { header } from '../components/base';
+import { div, header } from '../components/base';
 import { CarFormDialog } from '../components/modules/garage/car-form-dialog';
 import { CarsSection } from '../components/modules/garage/cars-section';
 import { Button } from '../components/ui/button';
@@ -8,6 +8,7 @@ import { LS_GARAGE_LAST_PAGE } from '../const/local-storage';
 import { PAGINATION_DEFAULT_PAGE } from '../const/pagination';
 import { useCreateCarMutation } from '../reactivity/mutations/create-car';
 import { useDeleteCarMutation } from '../reactivity/mutations/delete-car';
+import { useGenerateCarsMutation } from '../reactivity/mutations/generate-cars';
 import { useUpdateCarMutation } from '../reactivity/mutations/update-car';
 import { useGarageQuery } from '../reactivity/queries/garage';
 import { Signal } from '../reactivity/signal';
@@ -34,6 +35,9 @@ export class GaragePage extends Page {
     onSuccess: () => this.garageQuery.refetch(),
   });
   private updateCarMutation = useUpdateCarMutation({
+    onSuccess: () => this.garageQuery.refetch(),
+  });
+  private generateCars = useGenerateCarsMutation({
     onSuccess: () => this.garageQuery.refetch(),
   });
   private deleteCarMutation = useDeleteCarMutation({
@@ -116,6 +120,14 @@ export class GaragePage extends Page {
   public render(): void {
     this.root.addClasses('py-10');
 
+    const buttonsWrapper = div({ classNames: ['flex items-center gap-2'] });
+
+    const generateCarsButton = new Button({
+      textContent: 'Generate cars',
+      size: 'xs',
+      onClick: (): void => void this.generateCars.mutate({}),
+    });
+
     const addCarButton = new Button({
       textContent: '+ Add car',
       size: 'xs',
@@ -126,7 +138,9 @@ export class GaragePage extends Page {
       classNames: ['flex items-center flex-wrap justify-between'],
     });
 
-    headerWrapper.append(this.title, addCarButton);
+    buttonsWrapper.append(generateCarsButton, addCarButton);
+
+    headerWrapper.append(this.title, buttonsWrapper);
 
     this.root.append(headerWrapper, this.carsSection);
   }
