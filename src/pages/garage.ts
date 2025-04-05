@@ -109,6 +109,8 @@ export class GaragePage extends Page {
     onSelectCarToDelete: (carId): void => this.carToDelete.set(carId),
     onPrevPageClick: (): void => this.page.set(this.page.get() - 1),
     onNextPageClick: (): void => this.page.set(this.page.get() + 1),
+    onSelectCarToStartEngine: (): void => console.log('start'),
+    onSelectCarToStopEngine: (): void => console.log('stop'),
   });
 
   constructor(config: PageConfig) {
