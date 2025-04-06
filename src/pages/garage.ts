@@ -23,7 +23,7 @@ import type { PageConfig } from './abstract';
 import { Page } from './abstract';
 
 export class GaragePage extends Page {
-  private currentPageCarItems: CarItem[];
+  private currentPageCarItems: CarItem[] = [];
 
   private page = new Signal(() => {
     const page = LocalStorageService.get(LS_GARAGE_LAST_PAGE);
@@ -125,18 +125,8 @@ export class GaragePage extends Page {
   });
 
   private carsSection = new CarsSection({
-    // onSelectCarToEdit: (carId): void => this.carToEdit.set(carId),
-    // onSelectCarToDelete: (carId): void => this.carToDelete.set(carId),
     onPrevPageClick: (): void => this.page.set(this.page.get() - 1),
     onNextPageClick: (): void => this.page.set(this.page.get() + 1),
-    // onSelectCarToStartEngine: (
-    //   carId
-    // ): Promise<Promise<EngineManipulationResponse>> =>
-    //   this.startEngine.mutate({ carId }),
-    // onSelectCarToStopEngine: (
-    //   carId
-    // ): Promise<Promise<EngineManipulationResponse>> =>
-    //   this.stopEngine.mutate({ carId }),
   });
 
   constructor(config: PageConfig) {
@@ -185,9 +175,10 @@ export class GaragePage extends Page {
         car,
         onCarDeleteClick: (): void => this.carToDelete.set(car.id),
         onCarEditClick: (): void => this.carToEdit.set(car.id),
-        onStartEngineClick: (): void => this.startEngine.mutate(car.id),
+        onStartEngineClick: (): Promise<EngineManipulationResponse> =>
+          this.startEngine.mutate({ carId: car.id }),
         onStopEngineClick: (): Promise<EngineManipulationResponse> =>
-          this.stopEngine.mutate(car.id),
+          this.stopEngine.mutate({ carId: car.id }),
       });
 
       items.push(item);

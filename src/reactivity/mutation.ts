@@ -28,7 +28,7 @@ export class Mutation<Response, Props extends object> {
     this.error = new Signal<Error | null>(null);
   }
 
-  public async mutate(props: Props): Promise<void> {
+  public async mutate(props: Props): Promise<Response> {
     this.isLoading.set(true);
     this.isError.set(false);
     this.error.set(null);
@@ -39,13 +39,18 @@ export class Mutation<Response, Props extends object> {
       const result = await this.mutateFn(props);
 
       if (this.onSuccess) this.onSuccess(result);
+
+      return result;
     } catch (error) {
       this.isError.set(true);
+
       const errorInstance =
         error instanceof Error ? error : new Error(String(error));
       this.error.set(errorInstance);
 
       if (this.onError) this.onError(errorInstance);
+
+      throw errorInstance;
     } finally {
       this.isLoading.set(false);
     }

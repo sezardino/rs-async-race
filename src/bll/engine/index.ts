@@ -11,24 +11,28 @@ import type {
 export class EngineApiService {
   public static start(
     dto: EngineManipulationRequest
-  ): Promise<FetchResponse<ToggleEngineStatusResponse>> {
-    return fetchInstance.patch<ToggleEngineStatusResponse>(`engine`, {
-      params: {
-        id: dto.carId,
-        status: 'started',
-      },
-    });
+  ): Promise<ToggleEngineStatusResponse> {
+    return fetchInstance
+      .patch<ToggleEngineStatusResponse>(`engine`, {
+        params: {
+          id: dto.carId,
+          status: 'started',
+        },
+      })
+      .then((response) => response.data);
   }
 
   public static stop(
     dto: EngineManipulationRequest
-  ): Promise<FetchResponse<ToggleEngineStatusResponse>> {
-    return fetchInstance.patch<ToggleEngineStatusResponse>(`engine`, {
-      params: {
-        id: dto.carId,
-        status: 'stopped',
-      },
-    });
+  ): Promise<ToggleEngineStatusResponse> {
+    return fetchInstance
+      .patch<ToggleEngineStatusResponse>(`engine`, {
+        params: {
+          id: dto.carId,
+          status: 'stopped',
+        },
+      })
+      .then((response) => response.data);
   }
 
   public static toggleStatus(

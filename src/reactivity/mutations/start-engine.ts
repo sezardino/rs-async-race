@@ -3,11 +3,10 @@ import type {
   EngineManipulationRequest,
   EngineManipulationResponse,
 } from '../../bll/engine/types';
-import type { FetchResponse } from '../../utils/request';
 import type { MutationConfig } from '../mutation';
 import { Mutation } from '../mutation';
 
-type Response = FetchResponse<EngineManipulationResponse>;
+type Response = EngineManipulationResponse;
 
 type StartEngineMutationConfig = Omit<
   MutationConfig<Response, EngineManipulationRequest>,
