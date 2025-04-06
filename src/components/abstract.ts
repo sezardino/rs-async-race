@@ -6,6 +6,7 @@ export type ComponentConfig = {
   classNames?: ClassValue[];
   textContent?: string;
   attributes?: Record<string, string>;
+  style?: string;
 };
 
 export class Component<T extends HTMLElement = HTMLElement> {
@@ -19,6 +20,7 @@ export class Component<T extends HTMLElement = HTMLElement> {
       Object.entries(config.attributes).forEach(([key, value]) =>
         this.setAttribute(key, value)
       );
+    if (config?.style) this.setStyle(config.style);
   }
 
   public on(event: string, callback: EventListenerOrEventListenerObject): void {
@@ -95,5 +97,9 @@ export class Component<T extends HTMLElement = HTMLElement> {
     const current = this.element.getAttribute('disabled');
 
     this.setDisabled(!current);
+  }
+
+  public setStyle(style: string): void {
+    this.element.style.cssText = style;
   }
 }
