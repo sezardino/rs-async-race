@@ -1,4 +1,3 @@
-import type { EngineManipulationResponse } from '../bll/engine/types';
 import { Component } from '../components/abstract';
 import { div, header } from '../components/base';
 import { CarFormDialog } from '../components/modules/garage/car-form-dialog';
@@ -63,7 +62,26 @@ export class GaragePage extends Page {
       this.carToDelete.set(null);
     },
   });
-  private startEngine = useStartEngineMutation({});
+  private startEngine = useStartEngineMutation({
+    onMutate: ({ carId }) => {
+      const neededCar = this.currentPageCarItems.find(
+        (item) => item.car.id === carId
+      );
+      if (!neededCar) return;
+
+      neededCar.setEngineButtonDisabled('start', true);
+      neededCar.setEngineButtonDisabled('start', true);
+    },
+    onSettled: ({ carId }) => {
+      const neededCar = this.currentPageCarItems.find(
+        (item) => item.car.id === carId
+      );
+      if (!neededCar) return;
+
+      neededCar.setEngineButtonDisabled('start', true);
+      neededCar.setEngineButtonDisabled('stop', false);
+    },
+  });
   private stopEngine = useStopEngineMutation({});
   private carDrive = useCarDriveMutation({});
 
@@ -175,10 +193,10 @@ export class GaragePage extends Page {
         car,
         onCarDeleteClick: (): void => this.carToDelete.set(car.id),
         onCarEditClick: (): void => this.carToEdit.set(car.id),
-        onStartEngineClick: (): Promise<EngineManipulationResponse> =>
-          this.startEngine.mutate({ carId: car.id }),
-        onStopEngineClick: (): Promise<EngineManipulationResponse> =>
-          this.stopEngine.mutate({ carId: car.id }),
+        onStartEngineClick: (): void =>
+          void this.startEngine.mutate({ carId: car.id }),
+        onStopEngineClick: (): void =>
+          void this.stopEngine.mutate({ carId: car.id }),
       });
 
       items.push(item);

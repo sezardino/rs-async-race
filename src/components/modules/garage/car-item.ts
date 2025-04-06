@@ -7,39 +7,36 @@ import { Icon } from '../../ui/icon';
 
 import CarIcon from '../../../assets/car.svg?raw';
 import FlagIcon from '../../../assets/flag.svg?raw';
-import type { EngineManipulationResponse } from '../../../bll/engine/types';
-import { Signal } from '../../../reactivity/signal';
 
 export type CarItemConfig = Omit<ComponentConfig, 'tag'> & {
   car: CarEntity;
   onCarDeleteClick: () => void;
   onCarEditClick: () => void;
-  onStartEngineClick: () => Promise<EngineManipulationResponse>;
-  onStopEngineClick: () => Promise<EngineManipulationResponse>;
+  onStartEngineClick: () => void;
+  onStopEngineClick: () => void;
 };
 
 export class CarItem extends Component {
   public car: CarEntity;
 
-  private isEngineEnabled = new Signal(false);
-
   private onCarDeleteClick: () => void;
   private onCarEditClick: () => void;
-  private onStartEngineClick: () => Promise<EngineManipulationResponse>;
-  private onStopEngineClick: () => Promise<EngineManipulationResponse>;
+  private onStartEngineClick: () => void;
+  private onStopEngineClick: () => void;
 
   private startEngineButton = new Button({
     textContent: 'A',
     size: 'xs',
     color: 'alt',
-    onClick: (): void => void this.startEngineHandler(),
+    onClick: (): void => void this.onStartEngineClick(),
   });
 
   private stopEngineButton = new Button({
     textContent: 'B',
     size: 'xs',
     color: 'alt',
-    onClick: (): void => void this.stopEngineHandler(),
+    onClick: (): void => void this.onStopEngineClick(),
+    attributes: { disabled: 'true' },
   });
 
   constructor(config: CarItemConfig) {
@@ -68,28 +65,16 @@ export class CarItem extends Component {
     this.render();
   }
 
+  public setEngineButtonDisabled(type: 'start' | 'stop', value: boolean): void {
+    if (type === 'start') this.startEngineButton.setDisabled(value);
+    else this.stopEngineButton.setDisabled(value);
+  }
+
   private render(): void {
     const header = this.getHeader();
     const track = this.getTrack();
 
     this.append(header, track);
-  }
-
-  private async startEngineHandler(): Promise<void> {
-    const response = await this.onStartEngineClick();
-
-    this.calculateRace(response);
-  }
-
-  private async stopEngineHandler(): Promise<void> {
-    const response = await this.onStopEngineClick();
-
-    this.calculateRace(response);
-  }
-
-  private calculateRace(response: EngineManipulationResponse): void {
-    if (response.velocity > 0) this.isEngineEnabled.set(true);
-    else this.isEngineEnabled.set(false);
   }
 
   private getTrack(): Component {

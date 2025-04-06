@@ -2,9 +2,11 @@ import { Signal } from './signal';
 
 export type MutationConfig<Response, Props extends object> = {
   mutateFn: (arguments_: Props) => Promise<Response>;
-  onSuccess?: (data: Response) => void;
+  onMutate?: (variables: Props) => void;
+  onSuccess?: (data: Response, variables: Props) => void;
   onError?: (error: Error) => void;
   onLoading?: () => void;
+  onSettled?: (variables: Props) => void;
 };
 
 export class Mutation<Response, Props extends object> {
@@ -13,15 +15,19 @@ export class Mutation<Response, Props extends object> {
   private error: Signal<Error | null>;
   private mutateFn: (arguments_: Props) => Promise<Response>;
 
-  private onSuccess?: (data: Response) => void;
+  private onMutate?: (variables: Props) => void;
+  private onSuccess?: (data: Response, variables: Props) => void;
   private onError?: (error: Error) => void;
   private onLoading?: () => void;
+  private onSettled?: (variables: Props) => void;
 
   constructor(config: MutationConfig<Response, Props>) {
     this.mutateFn = config.mutateFn;
+    this.onMutate = config.onMutate;
     this.onSuccess = config.onSuccess;
     this.onError = config.onError;
     this.onLoading = config.onLoading;
+    this.onSettled = config.onSettled;
 
     this.isLoading = new Signal<boolean>(false);
     this.isError = new Signal<boolean>(false);
@@ -33,12 +39,13 @@ export class Mutation<Response, Props extends object> {
     this.isError.set(false);
     this.error.set(null);
 
+    if (this.onMutate) this.onMutate(props);
     if (this.onLoading) this.onLoading();
 
     try {
       const result = await this.mutateFn(props);
 
-      if (this.onSuccess) this.onSuccess(result);
+      if (this.onSuccess) this.onSuccess(result, props);
 
       return result;
     } catch (error) {
@@ -53,6 +60,8 @@ export class Mutation<Response, Props extends object> {
       throw errorInstance;
     } finally {
       this.isLoading.set(false);
+
+      if (this.onSettled) this.onSettled(props);
     }
   }
 }
