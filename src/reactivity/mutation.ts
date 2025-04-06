@@ -4,7 +4,7 @@ export type MutationConfig<Response, Props extends object> = {
   mutateFn: (arguments_: Props) => Promise<Response>;
   onMutate?: (variables: Props) => void;
   onSuccess?: (data: Response, variables: Props) => void;
-  onError?: (error: Error) => void;
+  onError?: (error: Error, variables: Props) => void;
   onLoading?: () => void;
   onSettled?: (variables: Props) => void;
 };
@@ -17,7 +17,7 @@ export class Mutation<Response, Props extends object> {
 
   private onMutate?: (variables: Props) => void;
   private onSuccess?: (data: Response, variables: Props) => void;
-  private onError?: (error: Error) => void;
+  private onError?: (error: Error, variables: Props) => void;
   private onLoading?: () => void;
   private onSettled?: (variables: Props) => void;
 
@@ -55,7 +55,7 @@ export class Mutation<Response, Props extends object> {
         error instanceof Error ? error : new Error(String(error));
       this.error.set(errorInstance);
 
-      if (this.onError) this.onError(errorInstance);
+      if (this.onError) this.onError(errorInstance, props);
 
       throw errorInstance;
     } finally {

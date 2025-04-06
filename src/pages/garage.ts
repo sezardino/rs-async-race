@@ -81,9 +81,38 @@ export class GaragePage extends Page {
       neededCar.setEngineButtonDisabled('start', true);
       neededCar.setEngineButtonDisabled('stop', false);
     },
+    onSuccess: (data, { carId }): void => {
+      const neededCar = this.currentPageCarItems.find(
+        (item) => item.car.id === carId
+      );
+      if (!neededCar) return;
+
+      neededCar.driveToEnd(data.distance / data.velocity);
+      void this.drive.mutate({ carId });
+    },
   });
-  private stopEngine = useStopEngineMutation({});
-  private carDrive = useCarDriveMutation({});
+  private stopEngine = useStopEngineMutation({
+    onSuccess: (_, { carId }) => {
+      const neededCar = this.currentPageCarItems.find(
+        (item) => item.car.id === carId
+      );
+      if (!neededCar) return;
+
+      neededCar.resetRace();
+      neededCar.setEngineButtonDisabled('start', false);
+      neededCar.setEngineButtonDisabled('stop', true);
+    },
+  });
+  private drive = useCarDriveMutation({
+    onError: (_, { carId }) => {
+      const neededCar = this.currentPageCarItems.find(
+        (item) => item.car.id === carId
+      );
+      if (!neededCar) return;
+
+      neededCar.breakDown();
+    },
+  });
 
   private carToDelete = new Signal<number | null>(null, [
     (value): void =>

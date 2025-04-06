@@ -88,7 +88,7 @@ export class CarItem extends Component {
     else this.stopEngineButton.setDisabled(value);
   }
 
-  public startAnimation(config: { duration: number; stopAfter: number }): void {
+  public driveToEnd(duration: number): void {
     if (!this.carWrapper) return;
 
     const car = this.carWrapper.element;
@@ -97,53 +97,57 @@ export class CarItem extends Component {
 
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = null;
     }
 
-    const { duration, stopAfter } = config;
-    const distance = container.offsetWidth - car.offsetWidth;
-
-    let startTimestamp: number | null = null;
-    let stopped = false;
-
+    this.animationFrameId = null;
     this.flameIcon.addClasses(['hidden']);
+
+    const distance = container.offsetWidth - car.offsetWidth;
+    let startTimestamp: number | null = null;
 
     const step = (timestamp: number): void => {
       if (startTimestamp === null) startTimestamp = timestamp;
-
       const elapsed = timestamp - startTimestamp;
 
-      if (elapsed >= duration) {
-        car.style.transform = `translateX(${distance}px)`;
-        this.animationFrameId = null;
-        this.flameIcon.addClasses(['hidden']);
-        return;
-      }
-
-      if (!stopped && elapsed >= stopAfter) {
-        const progress = stopAfter / duration;
-        const translateX = distance * progress;
-        car.style.transform = `translateX(${translateX}px)`;
-
-        this.flameIcon.removeClass('hidden');
-        stopped = true;
-        this.animationFrameId = null;
-        return;
-      }
-
-      const progress = elapsed / duration;
+      const progress = Math.min(elapsed / duration, 1);
       const translateX = distance * progress;
       car.style.transform = `translateX(${translateX}px)`;
 
-      this.animationFrameId = requestAnimationFrame(step);
+      if (progress < 1) {
+        this.animationFrameId = requestAnimationFrame(step);
+      } else {
+        this.animationFrameId = null;
+      }
     };
 
     this.animationFrameId = requestAnimationFrame(step);
   }
 
-  private resetState(): void {
-    this.flameIcon.removeClass('block');
+  public breakDown(): void {
+    if (this.animationFrameId === null) {
+      return;
+    }
+
+    const car = this.carWrapper.element;
+    const container = car.parentElement;
+    if (!container) return;
+
+    const currentTransform = car.style.transform;
+    cancelAnimationFrame(this.animationFrameId);
+    this.animationFrameId = null;
+
+    car.style.transform = currentTransform;
+    this.flameIcon.removeClass('hidden');
+  }
+
+  public resetRace(): void {
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+
     this.carWrapper.element.style.transform = 'translateX(0)';
+    this.flameIcon.addClasses(['hidden']);
   }
 
   private render(): void {
