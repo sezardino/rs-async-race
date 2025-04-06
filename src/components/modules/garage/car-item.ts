@@ -7,22 +7,40 @@ import { Icon } from '../../ui/icon';
 
 import CarIcon from '../../../assets/car.svg?raw';
 import FlagIcon from '../../../assets/flag.svg?raw';
+import type { EngineManipulationResponse } from '../../../bll/engine/types';
+import { Signal } from '../../../reactivity/signal';
 
 export type CarItemConfig = Omit<ComponentConfig, 'tag'> & {
   car: CarEntity;
   onCarDeleteClick: () => void;
   onCarEditClick: () => void;
-  onStartEngineClick: () => void;
-  onStopEngineClick: () => void;
+  onStartEngineClick: () => Promise<EngineManipulationResponse>;
+  onStopEngineClick: () => Promise<EngineManipulationResponse>;
 };
 
 export class CarItem extends Component {
   public car: CarEntity;
 
+  private isEngineEnabled = new Signal(false);
+
   private onCarDeleteClick: () => void;
   private onCarEditClick: () => void;
-  private onStartEngineClick: () => void;
-  private onStopEngineClick: () => void;
+  private onStartEngineClick: () => Promise<EngineManipulationResponse>;
+  private onStopEngineClick: () => Promise<EngineManipulationResponse>;
+
+  private startEngineButton = new Button({
+    textContent: 'A',
+    size: 'xs',
+    color: 'alt',
+    onClick: (): void => void this.startEngineHandler(),
+  });
+
+  private stopEngineButton = new Button({
+    textContent: 'B',
+    size: 'xs',
+    color: 'alt',
+    onClick: (): void => void this.stopEngineHandler(),
+  });
 
   constructor(config: CarItemConfig) {
     const {
@@ -38,7 +56,7 @@ export class CarItem extends Component {
     super({
       ...rest,
       classNames: [...classNames, 'flex flex-col gap-1'],
-      tag: 'li',
+      tag: 'div',
     });
 
     this.car = car;
@@ -57,24 +75,28 @@ export class CarItem extends Component {
     this.append(header, track);
   }
 
+  private async startEngineHandler(): Promise<void> {
+    const response = await this.onStartEngineClick();
+
+    this.calculateRace(response);
+  }
+
+  private async stopEngineHandler(): Promise<void> {
+    const response = await this.onStopEngineClick();
+
+    this.calculateRace(response);
+  }
+
+  private calculateRace(response: EngineManipulationResponse): void {
+    if (response.velocity > 0) this.isEngineEnabled.set(true);
+    else this.isEngineEnabled.set(false);
+  }
+
   private getTrack(): Component {
     const trackWrapper = div({ classNames: ['flex w-full gap-2'] });
     const buttonsWrapper = div({ classNames: ['flex flex-col gap-2'] });
 
-    const startEngine = new Button({
-      textContent: 'A',
-      size: 'xs',
-      color: 'alt',
-      onClick: (): void => this.onStartEngineClick(),
-    });
-    const stopEngine = new Button({
-      textContent: 'B',
-      size: 'xs',
-      color: 'alt',
-      onClick: (): void => this.onStopEngineClick(),
-    });
-
-    buttonsWrapper.append(startEngine, stopEngine);
+    buttonsWrapper.append(this.startEngineButton, this.stopEngineButton);
 
     const track = div({
       classNames: [
@@ -96,7 +118,7 @@ export class CarItem extends Component {
   }
 
   private getHeader(): Component {
-    const head = header({ classNames: ['flex gap-2'] });
+    const head = header({ classNames: ['flex items-center gap-2'] });
 
     const edit = new Button({
       textContent: 'Edit',
@@ -116,7 +138,7 @@ export class CarItem extends Component {
       classNames: ['text-lg font-medium'],
     });
 
-    head.append(name, edit, remove);
+    head.append(edit, remove, name);
 
     return head;
   }

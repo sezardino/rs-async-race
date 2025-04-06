@@ -1,6 +1,7 @@
 import type { FetchResponse } from '../../utils/request';
 import { fetchInstance } from '../../utils/request';
 import type {
+  EngineManipulationRequest,
   SwitchEngineToDriveRequest,
   SwitchEngineToDriveResponse,
   ToggleEngineStatusRequest,
@@ -8,6 +9,28 @@ import type {
 } from './types';
 
 export class EngineApiService {
+  public static start(
+    dto: EngineManipulationRequest
+  ): Promise<FetchResponse<ToggleEngineStatusResponse>> {
+    return fetchInstance.patch<ToggleEngineStatusResponse>(`engine`, {
+      params: {
+        id: dto.carId,
+        status: 'started',
+      },
+    });
+  }
+
+  public static stop(
+    dto: EngineManipulationRequest
+  ): Promise<FetchResponse<ToggleEngineStatusResponse>> {
+    return fetchInstance.patch<ToggleEngineStatusResponse>(`engine`, {
+      params: {
+        id: dto.carId,
+        status: 'stopped',
+      },
+    });
+  }
+
   public static toggleStatus(
     dto: ToggleEngineStatusRequest
   ): Promise<FetchResponse<ToggleEngineStatusResponse>> {
@@ -19,9 +42,9 @@ export class EngineApiService {
   public static switchToDrive(
     dto: SwitchEngineToDriveRequest
   ): Promise<FetchResponse<SwitchEngineToDriveResponse>> {
-    return fetchInstance.post<SwitchEngineToDriveResponse>(`/races`, {
-      body: {
-        ...dto,
+    return fetchInstance.patch<SwitchEngineToDriveResponse>(`engine`, {
+      params: {
+        id: dto.carId,
         status: 'drive',
       },
     });

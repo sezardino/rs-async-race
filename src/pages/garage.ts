@@ -1,22 +1,30 @@
+import type { EngineManipulationResponse } from '../bll/engine/types';
 import { Component } from '../components/abstract';
 import { div, header } from '../components/base';
 import { CarFormDialog } from '../components/modules/garage/car-form-dialog';
+import { CarItem } from '../components/modules/garage/car-item';
 import { CarsSection } from '../components/modules/garage/cars-section';
 import { Button } from '../components/ui/button';
 import { ConfirmDialog } from '../components/ui/confirm-dialog';
 import { LS_GARAGE_LAST_PAGE } from '../const/local-storage';
 import { PAGINATION_DEFAULT_PAGE } from '../const/pagination';
+import { useCarDriveMutation } from '../reactivity/mutations/car-drive';
 import { useCreateCarMutation } from '../reactivity/mutations/create-car';
 import { useDeleteCarMutation } from '../reactivity/mutations/delete-car';
 import { useGenerateCarsMutation } from '../reactivity/mutations/generate-cars';
+import { useStartEngineMutation } from '../reactivity/mutations/start-engine';
+import { useStopEngineMutation } from '../reactivity/mutations/stop-engine';
 import { useUpdateCarMutation } from '../reactivity/mutations/update-car';
 import { useGarageQuery } from '../reactivity/queries/garage';
 import { Signal } from '../reactivity/signal';
 import { LocalStorageService } from '../services/local-storage';
+import type { CarEntity } from '../types/entity';
 import type { PageConfig } from './abstract';
 import { Page } from './abstract';
 
 export class GaragePage extends Page {
+  private currentPageCarItems: CarItem[];
+
   private page = new Signal(() => {
     const page = LocalStorageService.get(LS_GARAGE_LAST_PAGE);
 
@@ -26,7 +34,16 @@ export class GaragePage extends Page {
   private garageQuery = useGarageQuery({
     defaultArgs: { page: this.page.get() },
     onSuccess: (response): void => {
-      this.carsSection.render(response);
+      const pageItems = this.generateCarItems(response.data);
+
+      this.carsSection.update({
+        currentPage: response.meta.page,
+        totalPages: response.meta.totalPages,
+        items: pageItems,
+      });
+
+      this.currentPageCarItems = pageItems;
+
       this.title.setText(this.getTitleCopy(response.meta.totalCount));
     },
   });
@@ -46,6 +63,9 @@ export class GaragePage extends Page {
       this.carToDelete.set(null);
     },
   });
+  private startEngine = useStartEngineMutation({});
+  private stopEngine = useStopEngineMutation({});
+  private carDrive = useCarDriveMutation({});
 
   private carToDelete = new Signal<number | null>(null, [
     (value): void =>
@@ -105,12 +125,18 @@ export class GaragePage extends Page {
   });
 
   private carsSection = new CarsSection({
-    onSelectCarToEdit: (carId): void => this.carToEdit.set(carId),
-    onSelectCarToDelete: (carId): void => this.carToDelete.set(carId),
+    // onSelectCarToEdit: (carId): void => this.carToEdit.set(carId),
+    // onSelectCarToDelete: (carId): void => this.carToDelete.set(carId),
     onPrevPageClick: (): void => this.page.set(this.page.get() - 1),
     onNextPageClick: (): void => this.page.set(this.page.get() + 1),
-    onSelectCarToStartEngine: (): void => console.log('start'),
-    onSelectCarToStopEngine: (): void => console.log('stop'),
+    // onSelectCarToStartEngine: (
+    //   carId
+    // ): Promise<Promise<EngineManipulationResponse>> =>
+    //   this.startEngine.mutate({ carId }),
+    // onSelectCarToStopEngine: (
+    //   carId
+    // ): Promise<Promise<EngineManipulationResponse>> =>
+    //   this.stopEngine.mutate({ carId }),
   });
 
   constructor(config: PageConfig) {
@@ -149,5 +175,24 @@ export class GaragePage extends Page {
 
   private getTitleCopy(totalCount?: number): string {
     return `Garage ${totalCount ? `(${totalCount})` : ''}`;
+  }
+
+  private generateCarItems(cars: CarEntity[]): CarItem[] {
+    const items: CarItem[] = [];
+
+    cars.forEach((car) => {
+      const item = new CarItem({
+        car,
+        onCarDeleteClick: (): void => this.carToDelete.set(car.id),
+        onCarEditClick: (): void => this.carToEdit.set(car.id),
+        onStartEngineClick: (): void => this.startEngine.mutate(car.id),
+        onStopEngineClick: (): Promise<EngineManipulationResponse> =>
+          this.stopEngine.mutate(car.id),
+      });
+
+      items.push(item);
+    });
+
+    return items;
   }
 }

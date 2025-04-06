@@ -86,4 +86,14 @@ export class Component<T extends HTMLElement = HTMLElement> {
 
     this.element.innerHTML = '';
   }
+
+  public setDisabled(value: boolean): void {
+    this.setAttribute('disabled', value ? 'true' : '');
+  }
+
+  public toggleDisabled(): void {
+    const current = this.element.getAttribute('disabled');
+
+    this.setDisabled(!current);
+  }
 }

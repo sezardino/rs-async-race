@@ -1,20 +1,20 @@
 import { PAGINATION_DEFAULT_PAGE } from '../../../const/pagination';
-import type { CarEntity } from '../../../types/entity';
-import type { PaginationResponse } from '../../../types/pagination';
 import type { ComponentConfig } from '../../abstract';
 import { Component } from '../../abstract';
-import { div, h2, header, ul } from '../../base';
+import { div, h2, li, ul } from '../../base';
 import { Button } from '../../ui/button';
 
-import { CarItem } from './car-item';
+import type { CarItem } from './car-item';
 
 export type CarsSectionConfig = Omit<ComponentConfig, 'tag' | 'textContent'> & {
   onNextPageClick: () => void;
   onPrevPageClick: () => void;
-  onSelectCarToDelete: (carId: number) => void;
-  onSelectCarToEdit: (carId: number) => void;
-  onSelectCarToStartEngine: (carId: number) => void;
-  onSelectCarToStopEngine: (carId: number) => void;
+};
+
+type UpdateSectionProps = {
+  currentPage: number;
+  totalPages: number;
+  items: CarItem[];
 };
 
 export class CarsSection extends Component {
@@ -22,19 +22,30 @@ export class CarsSection extends Component {
 
   private onNextPageClick: () => void;
   private onPrevPageClick: () => void;
-  private onSelectCarToDelete: (carId: number) => void;
-  private onSelectCarToEdit: (carId: number) => void;
-  private onSelectCarToStartEngine: (carId: number) => void;
-  private onSelectCarToStopEngine: (carId: number) => void;
+
+  private sectionTitle = h2({
+    textContent: this.getSectionTitle(),
+    classNames: ['text-xl font-medium'],
+  });
+
+  private carsList = ul({ classNames: ['flex flex-col gap-10'] });
+
+  private previousPageButton = new Button({
+    textContent: `Prev`,
+    color: 'alt',
+    size: 'sm',
+  });
+
+  private nextPageButton = new Button({
+    textContent: 'Next',
+    color: 'alt',
+    size: 'sm',
+  });
 
   constructor(config: CarsSectionConfig) {
     const {
-      onSelectCarToDelete,
-      onSelectCarToEdit,
       onNextPageClick,
       onPrevPageClick,
-      onSelectCarToStartEngine,
-      onSelectCarToStopEngine,
       classNames = [],
       ...rest
     } = config;
@@ -46,91 +57,44 @@ export class CarsSection extends Component {
 
     this.onNextPageClick = onNextPageClick;
     this.onPrevPageClick = onPrevPageClick;
-    this.onSelectCarToDelete = onSelectCarToDelete;
-    this.onSelectCarToEdit = onSelectCarToEdit;
-    this.onSelectCarToStartEngine = onSelectCarToStartEngine;
-    this.onSelectCarToStopEngine = onSelectCarToStopEngine;
+
+    this.init();
   }
 
-  public render(response: PaginationResponse<CarEntity>): void {
-    this.cleanSection();
+  public update(props: UpdateSectionProps): void {
+    const { currentPage, items, totalPages } = props;
+    this.carsList.clean();
 
-    const list = this.getList(response.data);
-    const header = this.getHeader(response.meta.page);
+    items.forEach((item) => {
+      const listItem = li();
 
-    const footerPagination = this.getPagination(
-      response.meta.page,
-      response.meta.totalPages
+      listItem.append(item);
+
+      this.carsList.append(listItem);
+    });
+
+    this.sectionTitle.setText(this.getSectionTitle(currentPage));
+
+    this.previousPageButton.setDisabled(
+      currentPage === PAGINATION_DEFAULT_PAGE
     );
-
-    this.append(header, list, footerPagination);
+    this.nextPageButton.setDisabled(currentPage === totalPages);
   }
 
-  private cleanSection(): void {
-    this.clean();
-    this.cars.forEach((car) => car.element.clean());
-  }
-
-  private getHeader(pageNumber: number): Component {
-    const wrapper = header({ classNames: ['flex flex-col gap-2'] });
-
-    const title = h2({
-      textContent: `Page: ${pageNumber}`,
-      classNames: ['text-xl font-medium'],
-    });
-
-    wrapper.append(title);
-
-    return wrapper;
-  }
-
-  private getList(cars: CarEntity[]): Component {
-    const list = ul({ classNames: ['flex flex-col gap-10'] });
-
-    cars.forEach((car) => {
-      const item = new CarItem({
-        car,
-        onCarDeleteClick: (): void => this.onSelectCarToDelete(car.id),
-        onCarEditClick: (): void => this.onSelectCarToEdit(car.id),
-        onStartEngineClick: (): void => this.onSelectCarToStartEngine(car.id),
-        onStopEngineClick: (): void => this.onSelectCarToStopEngine(car.id),
-      });
-
-      this.cars.push({ id: car.id, element: item });
-      list.append(item);
-    });
-
-    return list;
-  }
-
-  private getPagination(currentPage: number, totalPages: number): Component {
+  public init(): void {
     const wrapper = div({
       classNames: ['flex items-center gap-4 flex-wrap'],
     });
 
-    const previous = new Button({
-      textContent: `Prev`,
-      color: 'alt',
-      size: 'sm',
-      attributes: {
-        disabled: currentPage === PAGINATION_DEFAULT_PAGE ? 'true' : '',
-      },
-    });
+    wrapper.append(this.previousPageButton, this.nextPageButton);
 
-    const next = new Button({
-      textContent: 'Next',
-      color: 'alt',
-      size: 'sm',
-      attributes: {
-        disabled: currentPage === totalPages ? 'true' : '',
-      },
-    });
+    this.nextPageButton.on('click', () => this.onNextPageClick());
+    this.previousPageButton.on('click', () => this.onPrevPageClick());
 
-    next.on('click', () => this.onNextPageClick());
-    previous.on('click', () => this.onPrevPageClick());
+    this.append(this.sectionTitle, this.carsList, wrapper);
+  }
 
-    wrapper.append(previous, next);
-
-    return wrapper;
+  private getSectionTitle(currentPage = 1): string {
+    return `Page: ${currentPage}`;
   }
 }

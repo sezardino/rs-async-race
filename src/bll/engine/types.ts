@@ -1,18 +1,21 @@
 export type EngineStatus = 'started' | 'stopped';
 
-export type ToggleEngineStatusRequest = {
-  id: number;
-  status: EngineStatus;
+export type EngineManipulationRequest = {
+  carId: number;
 };
 
-export type ToggleEngineStatusResponse = {
+export type EngineManipulationResponse = {
   velocity: number;
   distance: number;
 };
 
-export type SwitchEngineToDriveRequest = {
-  id: number;
+export type ToggleEngineStatusRequest = EngineManipulationRequest & {
+  status: EngineStatus;
 };
+
+export type ToggleEngineStatusResponse = EngineManipulationResponse;
+
+export type SwitchEngineToDriveRequest = EngineManipulationRequest;
 
 export type SwitchEngineToDriveResponse = {
   success: boolean;
