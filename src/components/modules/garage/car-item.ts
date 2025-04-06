@@ -19,6 +19,7 @@ export type CarItemConfig = Omit<ComponentConfig, 'tag'> & {
 export class CarItem extends Component {
   public car: CarEntity;
 
+  private carComponent: Component | undefined;
   private onCarDeleteClick: () => void;
   private onCarEditClick: () => void;
   private onStartEngineClick: () => void;
@@ -84,18 +85,20 @@ export class CarItem extends Component {
     buttonsWrapper.append(this.startEngineButton, this.stopEngineButton);
 
     const track = div({
-      classNames: [
-        'flex-1 pb-1 flex items-end justify-between border-b-2 pr-10',
-      ],
+      classNames: ['flex-1 pb-1 flex items-end border-b-2 pr-10'],
     });
 
-    const carIcon = new Icon({ content: CarIcon });
-    carIcon.element.style.color = this.car.color;
+    this.carComponent = new Icon({
+      content: CarIcon,
+      classNames: ['absolute'],
+    });
+    this.carComponent.element.style.color = this.car.color;
+
     const flagIcon = new Icon({ content: FlagIcon });
 
-    flagIcon.addClasses(['[&>svg]:size-10']);
+    flagIcon.addClasses(['ml-auto [&>svg]:size-10']);
 
-    track.append(carIcon, flagIcon);
+    track.append(this.carComponent, flagIcon);
 
     trackWrapper.append(buttonsWrapper, track);
 
