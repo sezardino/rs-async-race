@@ -19,6 +19,7 @@ import { GaragePageUI } from './garage.ui';
 export class GaragePage extends Page {
   private UI: GaragePageUI;
   private currentPageCarItems: CarItem[] = [];
+
   private isRaceStarted = new Signal(false, [
     (value): void => {
       if (!value) return this.resetRace();
@@ -26,6 +27,7 @@ export class GaragePage extends Page {
       this.startRace();
     },
   ]);
+
   private page = new Signal(() => {
     const page = LocalStorageService.get(LS_GARAGE_LAST_PAGE);
 
@@ -64,27 +66,22 @@ export class GaragePage extends Page {
   });
   private startEngine = useStartEngineMutation({
     onMutate: ({ carId }) => {
-      const neededCar = this.currentPageCarItems.find(
-        (item) => item.car.id === carId
-      );
+      const neededCar = this.findCarById(carId);
       if (!neededCar) return;
 
-      neededCar.setEngineButtonDisabled('start', true);
-      neededCar.setEngineButtonDisabled('start', true);
+      neededCar.setEngineButtonDisabled('all', true);
     },
     onSettled: ({ carId }) => {
-      const neededCar = this.currentPageCarItems.find(
-        (item) => item.car.id === carId
-      );
+      const neededCar = this.findCarById(carId);
       if (!neededCar) return;
+
+      if (this.isRaceStarted.get()) return;
 
       neededCar.setEngineButtonDisabled('start', true);
       neededCar.setEngineButtonDisabled('stop', false);
     },
     onSuccess: (data, { carId }): void => {
-      const neededCar = this.currentPageCarItems.find(
-        (item) => item.car.id === carId
-      );
+      const neededCar = this.findCarById(carId);
       if (!neededCar) return;
 
       neededCar.driveToEnd(data.distance / data.velocity);
@@ -93,9 +90,7 @@ export class GaragePage extends Page {
   });
   private stopEngine = useStopEngineMutation({
     onSuccess: (_, { carId }) => {
-      const neededCar = this.currentPageCarItems.find(
-        (item) => item.car.id === carId
-      );
+      const neededCar = this.findCarById(carId);
       if (!neededCar) return;
 
       neededCar.resetRace();
@@ -105,9 +100,7 @@ export class GaragePage extends Page {
   });
   private drive = useCarDriveMutation({
     onError: (_, { carId }) => {
-      const neededCar = this.currentPageCarItems.find(
-        (item) => item.car.id === carId
-      );
+      const neededCar = this.findCarById(carId);
       if (!neededCar) return;
 
       neededCar.breakDown();
@@ -191,23 +184,32 @@ export class GaragePage extends Page {
   }
 
   private startRace(): void {
-    this.currentPageCarItems.forEach(
-      (carItem) => void this.startEngine.mutate({ carId: carItem.car.id })
-    );
+    this.currentPageCarItems.forEach((carItem) => {
+      void this.startEngine.mutate({ carId: carItem.car.id });
+      carItem.setEngineButtonDisabled('all', true);
+      carItem.setManageButtonDisabled(true);
+    });
 
     this.UI.raceButton.setDisabled(true);
     this.UI.resetRaceButton.setDisabled(false);
+    this.UI.setManageButtonDisabled(true);
     this.UI.carsSection.setPaginationButtonsDisabled(true);
   }
 
   private resetRace(): void {
     this.currentPageCarItems.forEach((carItem) => {
       void this.stopEngine.mutate({ carId: carItem.car.id });
-      carItem.setEngineButtonDisabled('start', true);
-      carItem.setEngineButtonDisabled('stop', true);
+      carItem.setEngineButtonDisabled('all', true);
+      carItem.setManageButtonDisabled(false);
     });
+
+    this.UI.setManageButtonDisabled(false);
     this.UI.raceButton.setDisabled(false);
     this.UI.resetRaceButton.setDisabled(true);
     this.UI.carsSection.setPaginationButtonsDisabled(false);
+  }
+
+  private findCarById(carId: number): CarItem | undefined {
+    return this.currentPageCarItems.find((item) => item.car.id === carId);
   }
 }

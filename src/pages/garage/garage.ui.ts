@@ -105,6 +105,12 @@ export class GaragePageUI {
     this.title.setText(this.getTitleCopy(totalCount));
   }
 
+  public setManageButtonDisabled(value: boolean): void {
+    const buttons = [this.addCarButton, this.generateCarsButton];
+
+    buttons.forEach((button) => button.setDisabled(value));
+  }
+
   private renderUI(): void {
     this.pageRoot.addClasses('py-10');
 

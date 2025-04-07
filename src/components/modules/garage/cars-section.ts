@@ -23,6 +23,9 @@ export class CarsSection extends Component {
   private onNextPageClick: () => void;
   private onPrevPageClick: () => void;
 
+  private isPrevButtonDisabledPreviously: boolean | undefined;
+  private isNextButtonDisabledPreviously: boolean | undefined;
+
   private sectionTitle = h2({
     textContent: this.getSectionTitle(),
     classNames: ['text-xl font-medium'],
@@ -82,8 +85,28 @@ export class CarsSection extends Component {
   }
 
   public setPaginationButtonsDisabled(value: boolean): void {
-    this.nextPageButton.setDisabled(value);
-    this.previousPageButton.setDisabled(value);
+    const previousButtonState =
+      this.previousPageButton.element.getAttribute('disabled');
+    const nextButtonState =
+      this.nextPageButton.element.getAttribute('disabled');
+
+    if (value) {
+      this.isPrevButtonDisabledPreviously = previousButtonState === 'true';
+      this.isNextButtonDisabledPreviously = nextButtonState === 'true';
+
+      this.nextPageButton.setDisabled(true);
+      this.previousPageButton.setDisabled(true);
+    } else {
+      this.nextPageButton.setDisabled(
+        this.isNextButtonDisabledPreviously || false
+      );
+      this.previousPageButton.setDisabled(
+        this.isPrevButtonDisabledPreviously || false
+      );
+
+      this.isPrevButtonDisabledPreviously = undefined;
+      this.isNextButtonDisabledPreviously = undefined;
+    }
   }
 
   private init(): void {

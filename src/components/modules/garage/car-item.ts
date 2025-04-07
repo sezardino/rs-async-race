@@ -20,36 +20,21 @@ export type CarItemConfig = Omit<ComponentConfig, 'tag'> & {
 export class CarItem extends Component {
   public car: CarEntity;
 
+  private startEngineButton: Button;
+  private stopEngineButton: Button;
+  private editButton: Button;
+  private removeButton: Button;
+  private carIcon: Icon;
+
   private animationFrameId: number | null = null;
 
   private carWrapper = div({
     classNames: ['absolute grid'],
   });
-  private carIcon: Icon;
   private flameIcon = new Icon({
     content: FlameIcon,
     classNames: ['absolute animate-ping hidden'],
     style: 'color: red',
-  });
-
-  private onCarDeleteClick: () => void;
-  private onCarEditClick: () => void;
-  private onStartEngineClick: () => void;
-  private onStopEngineClick: () => void;
-
-  private startEngineButton = new Button({
-    textContent: 'A',
-    size: 'xs',
-    color: 'alt',
-    onClick: (): void => void this.onStartEngineClick(),
-  });
-
-  private stopEngineButton = new Button({
-    textContent: 'B',
-    size: 'xs',
-    color: 'alt',
-    onClick: (): void => void this.onStopEngineClick(),
-    attributes: { disabled: 'true' },
   });
 
   constructor(config: CarItemConfig) {
@@ -70,22 +55,58 @@ export class CarItem extends Component {
     });
 
     this.car = car;
-    this.onCarDeleteClick = onCarDeleteClick;
-    this.onCarEditClick = onCarEditClick;
-    this.onStartEngineClick = onStartEngineClick;
-    this.onStopEngineClick = onStopEngineClick;
 
     this.carIcon = new Icon({
       content: CarIcon,
       style: `color: ${car.color}`,
     });
 
+    this.editButton = new Button({
+      textContent: 'Edit',
+      size: 'xs',
+      color: 'dark',
+      onClick: (): void => onCarEditClick(),
+    });
+    this.removeButton = new Button({
+      textContent: 'Remove',
+      size: 'xs',
+      color: 'dark',
+      onClick: (): void => onCarDeleteClick(),
+    });
+    this.startEngineButton = new Button({
+      textContent: 'A',
+      size: 'xs',
+      color: 'alt',
+      onClick: (): void => void onStartEngineClick(),
+    });
+
+    this.stopEngineButton = new Button({
+      textContent: 'B',
+      size: 'xs',
+      color: 'alt',
+      onClick: (): void => void onStopEngineClick(),
+      attributes: { disabled: 'true' },
+    });
+
     this.render();
   }
 
-  public setEngineButtonDisabled(type: 'start' | 'stop', value: boolean): void {
+  public setEngineButtonDisabled(
+    type: 'start' | 'stop' | 'all',
+    value: boolean
+  ): void {
     if (type === 'start') this.startEngineButton.setDisabled(value);
-    else this.stopEngineButton.setDisabled(value);
+    else if (type === 'stop') this.stopEngineButton.setDisabled(value);
+    else {
+      this.startEngineButton.setDisabled(value);
+      this.stopEngineButton.setDisabled(value);
+    }
+  }
+
+  public setManageButtonDisabled(value: boolean): void {
+    const buttons = [this.editButton, this.removeButton];
+
+    buttons.forEach((button) => button.setDisabled(value));
   }
 
   public driveToEnd(duration: number): void {
@@ -184,25 +205,12 @@ export class CarItem extends Component {
   private getHeader(): Component {
     const head = header({ classNames: ['flex items-center gap-2'] });
 
-    const edit = new Button({
-      textContent: 'Edit',
-      size: 'xs',
-      color: 'dark',
-      onClick: (): void => this.onCarEditClick(),
-    });
-    const remove = new Button({
-      textContent: 'Remove',
-      size: 'xs',
-      color: 'dark',
-      onClick: (): void => this.onCarDeleteClick(),
-    });
-
     const name = h3({
       textContent: this.car.name,
       classNames: ['text-lg font-medium'],
     });
 
-    head.append(edit, remove, name);
+    head.append(this.editButton, this.removeButton, name);
 
     return head;
   }
