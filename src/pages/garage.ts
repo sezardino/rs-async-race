@@ -23,6 +23,13 @@ import { Page } from './abstract';
 
 export class GaragePage extends Page {
   private currentPageCarItems: CarItem[] = [];
+  private isRaceStarted = new Signal(false, [
+    (value): void => {
+      if (!value) return this.resetRace();
+
+      this.startRace();
+    },
+  ]);
 
   private page = new Signal(() => {
     const page = LocalStorageService.get(LS_GARAGE_LAST_PAGE);
@@ -151,12 +158,6 @@ export class GaragePage extends Page {
     },
   });
 
-  private title = new Component({
-    tag: 'h1',
-    textContent: this.getTitleCopy(),
-    classNames: ['text-2xl font-bold'],
-  });
-
   private carFormDialog = new CarFormDialog({
     submitCopy: 'Create Car',
     onFormSubmit: async (values): Promise<void> => {
@@ -169,6 +170,26 @@ export class GaragePage extends Page {
       }
     },
     onClose: (): void => this.carToEdit.set(null),
+  });
+
+  private title = new Component({
+    tag: 'h1',
+    textContent: this.getTitleCopy(),
+    classNames: ['text-2xl font-bold'],
+  });
+
+  private raceButton = new Button({
+    textContent: 'Race',
+    color: 'alt',
+    size: 'xs',
+    onClick: (): void => void this.isRaceStarted.set(true),
+  });
+  private resetRaceButton = new Button({
+    textContent: 'Reset race',
+    color: 'alt',
+    size: 'xs',
+    onClick: (): void => void this.isRaceStarted.set(false),
+    disabled: true,
   });
 
   private carsSection = new CarsSection({
@@ -185,8 +206,6 @@ export class GaragePage extends Page {
   public render(): void {
     this.root.addClasses('py-10');
 
-    const buttonsWrapper = div({ classNames: ['flex items-center gap-2'] });
-
     const generateCarsButton = new Button({
       textContent: 'Generate cars',
       size: 'xs',
@@ -199,13 +218,22 @@ export class GaragePage extends Page {
       onClick: (): void => this.carFormDialog.openDialog(),
     });
 
-    const headerWrapper = header({
+    const headerWrapper = header({ classNames: ['flex flex-col gap-2'] });
+    const buttonsWrapper = div({ classNames: ['flex items-center gap-2'] });
+
+    const firstLine = div({
       classNames: ['flex items-center flex-wrap justify-between'],
+    });
+    const secondLine = div({
+      classNames: ['flex items-center gap-2'],
     });
 
     buttonsWrapper.append(generateCarsButton, addCarButton);
 
-    headerWrapper.append(this.title, buttonsWrapper);
+    firstLine.append(this.title, buttonsWrapper);
+    secondLine.append(this.raceButton, this.resetRaceButton);
+
+    headerWrapper.append(firstLine, secondLine);
 
     this.root.append(headerWrapper, this.carsSection);
   }
@@ -232,5 +260,26 @@ export class GaragePage extends Page {
     });
 
     return items;
+  }
+
+  private startRace(): void {
+    this.currentPageCarItems.forEach(
+      (carItem) => void this.startEngine.mutate({ carId: carItem.car.id })
+    );
+
+    this.raceButton.setDisabled(true);
+    this.resetRaceButton.setDisabled(false);
+    this.carsSection.setPaginationButtonsDisabled(true);
+  }
+
+  private resetRace(): void {
+    this.currentPageCarItems.forEach((carItem) => {
+      void this.stopEngine.mutate({ carId: carItem.car.id });
+      carItem.setEngineButtonDisabled('start', true);
+      carItem.setEngineButtonDisabled('stop', true);
+    });
+    this.raceButton.setDisabled(false);
+    this.resetRaceButton.setDisabled(true);
+    this.carsSection.setPaginationButtonsDisabled(false);
   }
 }

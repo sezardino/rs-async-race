@@ -62,15 +62,23 @@ class AbstractButton extends Component {
 
 export type ButtonConfig = Omit<AbstractButtonConfig, 'tag'> & {
   type?: 'submit' | 'button' | 'reset';
+  disabled?: boolean;
 };
 
 export class Button extends AbstractButton {
-  constructor({ type = 'button', attributes, ...config }: ButtonConfig) {
+  constructor({
+    disabled,
+    type = 'button',
+    attributes,
+    ...config
+  }: ButtonConfig) {
     super({
       tag: 'button',
       ...config,
       attributes: { type, ...attributes },
     });
+
+    if (disabled) this.setDisabled(true);
   }
 }
 

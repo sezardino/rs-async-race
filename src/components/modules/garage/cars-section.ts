@@ -81,7 +81,12 @@ export class CarsSection extends Component {
     this.nextPageButton.setDisabled(currentPage === totalPages);
   }
 
-  public init(): void {
+  public setPaginationButtonsDisabled(value: boolean): void {
+    this.nextPageButton.setDisabled(value);
+    this.previousPageButton.setDisabled(value);
+  }
+
+  private init(): void {
     const wrapper = div({
       classNames: ['flex items-center gap-4 flex-wrap'],
     });
