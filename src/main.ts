@@ -2,7 +2,7 @@ import './styles/index.css';
 
 import { ApplicationUrls } from './const/router';
 import { DefaultLayout } from './layouts/default';
-import { GaragePage } from './pages/garage';
+import { GaragePage } from './pages/garage/garage.page';
 import { NotFoundPage } from './pages/not-found';
 import { WinnersPage } from './pages/winners';
 import { Router } from './router';
