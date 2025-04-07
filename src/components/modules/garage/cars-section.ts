@@ -1,7 +1,7 @@
 import { PAGINATION_DEFAULT_PAGE } from '../../../const/pagination';
 import type { ComponentConfig } from '../../abstract';
 import { Component } from '../../abstract';
-import { div, h2, li, ul } from '../../base';
+import { div, h2, li, skeleton, ul } from '../../base';
 import { Button } from '../../ui/button';
 
 import type { CarItem } from './car-item';
@@ -66,6 +66,7 @@ export class CarsSection extends Component {
 
   public update(props: UpdateSectionProps): void {
     const { currentPage, items, totalPages } = props;
+
     this.carsList.clean();
 
     items.forEach((item) => {
@@ -76,12 +77,15 @@ export class CarsSection extends Component {
       this.carsList.append(listItem);
     });
 
-    this.sectionTitle.setText(this.getSectionTitle(currentPage));
+    const title =
+      items.length === 0 && totalPages >= 1
+        ? `No cars found for page: ${currentPage}`
+        : this.getSectionTitle(currentPage);
 
-    this.previousPageButton.setDisabled(
-      currentPage === PAGINATION_DEFAULT_PAGE
-    );
-    this.nextPageButton.setDisabled(currentPage === totalPages);
+    this.sectionTitle.setText(title);
+
+    this.previousPageButton.setDisabled(currentPage <= PAGINATION_DEFAULT_PAGE);
+    this.nextPageButton.setDisabled(currentPage >= totalPages);
   }
 
   public setPaginationButtonsDisabled(value: boolean): void {
@@ -109,6 +113,18 @@ export class CarsSection extends Component {
     }
   }
 
+  public showLoadingState(): void {
+    this.carsList.clean();
+    new Array(7).fill(null).forEach(() => {
+      const listItem = li();
+      listItem.append(skeleton());
+      this.carsList.append(listItem);
+    });
+    this.sectionTitle.setText('Loading...');
+    this.previousPageButton.setDisabled(true);
+    this.nextPageButton.setDisabled(true);
+  }
+
   private init(): void {
     const wrapper = div({
       classNames: ['flex items-center gap-4 flex-wrap'],
@@ -120,6 +136,7 @@ export class CarsSection extends Component {
     this.previousPageButton.on('click', () => this.onPrevPageClick());
 
     this.append(this.sectionTitle, this.carsList, wrapper);
+    this.showLoadingState();
   }
 
   private getSectionTitle(currentPage = 1): string {

@@ -1,7 +1,7 @@
 import type { ButtonColor, ButtonSizes } from './button.types';
 
 export const DEFAULT_BUTTON_STYLES =
-  'focus:ring-4 font-medium rounded-lg px-5 py-2.5 focus:outline-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-40';
+  'focus:ring-4 font-medium rounded-lg px-5 py-2.5 focus:outline-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 select-none';
 
 export const BUTTON_STYLES: Record<ButtonColor, string> = {
   default:

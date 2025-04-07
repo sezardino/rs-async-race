@@ -39,7 +39,7 @@ export class Form<Values extends Record<string, string>> extends Component {
     throw new Error(`Method should be implemented, ${JSON.stringify(values)}`);
   }
 
-  public toggleDisabled(value: boolean): void {
+  public toggleFieldDisabled(value: boolean): void {
     Object.values(this.fields).forEach((field) =>
       field.setAttribute('disabled', value ? 'true' : '')
     );

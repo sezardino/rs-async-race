@@ -27,3 +27,8 @@ export const p = (config?: BaseConfig): Component =>
   new Component<HTMLParagraphElement>({ ...config, tag: 'p' });
 export const span = (config?: BaseConfig): Component =>
   new Component<HTMLSpanElement>({ ...config, tag: 'span' });
+export const skeleton = (config?: BaseConfig): Component =>
+  new Component({
+    ...config,
+    classNames: ['animate-pulse rounded-md bg-gray/10', config?.classNames],
+  });

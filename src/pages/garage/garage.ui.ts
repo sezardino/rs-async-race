@@ -75,6 +75,7 @@ export class GaragePageUI {
     this.carsSection = new CarsSection({
       onPrevPageClick: (): void => onCarsPageChange('prev'),
       onNextPageClick: (): void => onCarsPageChange('next'),
+      classNames: ['mt-10'],
     });
 
     this.generateCarsButton = new Button({

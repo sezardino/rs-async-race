@@ -1,10 +1,9 @@
 import { GarageApiService } from '../../bll/garage';
 import type { DeleteCarRequest } from '../../bll/garage/types';
-import type { FetchResponse } from '../../utils/request';
 import type { MutationConfig } from '../mutation';
 import { Mutation } from '../mutation';
 
-type Response = FetchResponse<void>;
+type Response = void;
 
 type DeleteCarMutationConfig = Omit<
   MutationConfig<Response, DeleteCarRequest>,

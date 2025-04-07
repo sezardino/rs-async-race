@@ -35,6 +35,7 @@ export class GaragePage extends Page {
   }, [(value): void => LocalStorageService.set(LS_GARAGE_LAST_PAGE, value)]);
   private garageQuery = useGarageQuery({
     defaultArgs: { page: this.page.get() },
+    onLoading: () => this.UI?.carsSection.showLoadingState(),
     onSuccess: (response): void => {
       const pageItems = this.generateCarItems(response.data);
 
@@ -162,6 +163,8 @@ export class GaragePage extends Page {
       },
     });
   }
+
+  public render(): void {}
 
   private generateCarItems(cars: CarEntity[]): CarItem[] {
     const items: CarItem[] = [];

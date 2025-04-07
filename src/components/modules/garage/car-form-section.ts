@@ -83,6 +83,6 @@ export class CarFormSection extends Component {
     this.cancelButton.setAttribute('disabled', value ? 'true' : '');
     this.submitButton.setAttribute('disabled', value ? 'true' : '');
 
-    this.form.toggleDisabled(value);
+    this.form.toggleFieldDisabled(value);
   }
 }

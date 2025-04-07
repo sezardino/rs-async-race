@@ -42,7 +42,7 @@ export class WinnersApiService {
         const cars = await Promise.all(
           response.data.map(async (winner) => {
             try {
-              const car = await GarageApiService.car(winner.id);
+              const car = await GarageApiService.car({ carId: winner.id });
 
               return car.data;
             } catch {

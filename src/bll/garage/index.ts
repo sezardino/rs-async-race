@@ -62,11 +62,13 @@ export class GarageApiService {
     });
   }
 
-  public static deleteCar({
-    carId,
-  }: DeleteCarRequest): Promise<FetchResponse<void>> {
-    return fetchInstance
-      .delete<void>(`/garage/${carId}`)
-      .then(() => WinnersApiService.deleteWinner({ winnerId: carId }));
+  public static async deleteCar({ carId }: DeleteCarRequest): Promise<void> {
+    try {
+      await fetchInstance.delete<void>(`/garage/${carId}`);
+
+      void WinnersApiService.deleteWinner({ winnerId: carId });
+    } catch (error) {
+      console.log(error);
+    }
   }
 }

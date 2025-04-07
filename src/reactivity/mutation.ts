@@ -57,7 +57,7 @@ export class Mutation<Response, Props extends object> {
 
       if (this.onError) this.onError(errorInstance, props);
 
-      throw errorInstance;
+      return undefined as unknown as Response;
     } finally {
       this.isLoading.set(false);
 
