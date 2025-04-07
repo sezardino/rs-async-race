@@ -3,6 +3,7 @@ import { div, header } from '../../components/base';
 import type { CarFormDialogConfig } from '../../components/modules/garage/car-form-dialog';
 import { CarFormDialog } from '../../components/modules/garage/car-form-dialog';
 import { CarsSection } from '../../components/modules/garage/cars-section';
+import { AlertDialog } from '../../components/ui/alert-dialog';
 import { Button } from '../../components/ui/button';
 import type { ConfirmDialogProps } from '../../components/ui/confirm-dialog';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
@@ -21,14 +22,11 @@ export class GaragePageUI {
   public pageRoot: Component;
 
   public deleteCarDialog: ConfirmDialog;
-
   public carFormDialog: CarFormDialog;
-
   public raceButton: Button;
-
   public resetRaceButton: Button;
-
   public generateCarsButton: Button;
+  public carsSection: CarsSection;
 
   public addCarButton = new Button({
     textContent: '+ Add car',
@@ -36,12 +34,16 @@ export class GaragePageUI {
     onClick: (): void => this.carFormDialog.openDialog(),
   });
 
-  public carsSection: CarsSection;
-
   public title = new Component({
     tag: 'h1',
     textContent: this.getTitleCopy(),
     classNames: ['text-2xl font-bold'],
+  });
+
+  public finishedRaceDialog = new AlertDialog({
+    confirmText: 'Close',
+    description: '',
+    title: '',
   });
 
   constructor(config: GaragePageUIConfig) {

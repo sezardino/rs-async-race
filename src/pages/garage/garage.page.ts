@@ -12,6 +12,7 @@ import { useGarageQuery } from '../../reactivity/queries/garage';
 import { Signal } from '../../reactivity/signal';
 import { LocalStorageService } from '../../services/local-storage';
 import type { CarEntity } from '../../types/entity';
+import { msToSeconds } from '../../utils/ms-to-seconds';
 import type { PageConfig } from '../abstract';
 import { Page } from '../abstract';
 import { GaragePageUI } from './garage.ui';
@@ -19,6 +20,7 @@ import { GaragePageUI } from './garage.ui';
 export class GaragePage extends Page {
   private UI: GaragePageUI;
   private currentPageCarItems: CarItem[] = [];
+  private currentRaceWinner: { car: CarEntity; time: number } | null = null;
 
   private isRaceStarted = new Signal(false, [
     (value): void => {
@@ -172,6 +174,7 @@ export class GaragePage extends Page {
     cars.forEach((car) => {
       const item = new CarItem({
         car,
+        onFinish: (time): void => this.onSomeoneFinishRace(car, time),
         onCarDeleteClick: (): void => this.carToDelete.set(car.id),
         onCarEditClick: (): void => this.carToEdit.set(car.id),
         onStartEngineClick: (): void =>
@@ -184,6 +187,16 @@ export class GaragePage extends Page {
     });
 
     return items;
+  }
+
+  private onSomeoneFinishRace(car: CarEntity, time: number): void {
+    if (this.currentRaceWinner) return;
+
+    this.currentRaceWinner = { car, time };
+    this.UI.finishedRaceDialog.openAlertDialog({
+      title: `Car ${car.name} finish race first`,
+      description: `time: ${msToSeconds(time)}s`,
+    });
   }
 
   private startRace(): void {
@@ -210,6 +223,7 @@ export class GaragePage extends Page {
     this.UI.raceButton.setDisabled(false);
     this.UI.resetRaceButton.setDisabled(true);
     this.UI.carsSection.setPaginationButtonsDisabled(false);
+    this.currentRaceWinner = null;
   }
 
   private findCarById(carId: number): CarItem | undefined {

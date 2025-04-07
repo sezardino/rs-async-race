@@ -15,6 +15,7 @@ export type CarItemConfig = Omit<ComponentConfig, 'tag'> & {
   onCarEditClick: () => void;
   onStartEngineClick: () => void;
   onStopEngineClick: () => void;
+  onFinish: (time: number) => void;
 };
 
 export class CarItem extends Component {
@@ -25,6 +26,7 @@ export class CarItem extends Component {
   private editButton: Button;
   private removeButton: Button;
   private carIcon: Icon;
+  private onFinish: (time: number) => void;
 
   private animationFrameId: number | null = null;
 
@@ -44,6 +46,7 @@ export class CarItem extends Component {
       onCarEditClick,
       onStartEngineClick,
       onStopEngineClick,
+      onFinish,
       classNames = [],
       ...rest
     } = config;
@@ -55,6 +58,7 @@ export class CarItem extends Component {
     });
 
     this.car = car;
+    this.onFinish = onFinish;
 
     this.carIcon = new Icon({
       content: CarIcon,
@@ -138,6 +142,7 @@ export class CarItem extends Component {
         this.animationFrameId = requestAnimationFrame(step);
       } else {
         this.animationFrameId = null;
+        this.onFinish(elapsed);
       }
     };
 
