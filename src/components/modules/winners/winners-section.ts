@@ -1,5 +1,4 @@
 import type { WinnerWithCar } from '../../../types/entity';
-import type { PaginationResponse } from '../../../types/pagination';
 import type { ComponentConfig } from '../../abstract';
 import { Component } from '../../abstract';
 import { footer, h2, header } from '../../base';
@@ -68,11 +67,13 @@ export class WinnersSection extends Component {
     this.init();
   }
 
-  public update(response: PaginationResponse<WinnerWithCar>): void {
-    this.winnersTable.cleanBody();
-    this.winnersTable.setData(response.data);
+  public update(data: { winners: WinnerWithCar[]; currentPage: number }): void {
+    const { winners, currentPage } = data;
 
-    this.updateTitle(response.meta.page);
+    this.winnersTable.cleanBody();
+    this.winnersTable.setData(winners);
+
+    this.updateTitle(currentPage);
   }
 
   public updateTitle(currentPage: number): void {

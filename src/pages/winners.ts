@@ -45,8 +45,10 @@ export class WinnersPage extends Page {
   private winnersQuery = useWinnersQuery({
     defaultArgs: { page: this.page.get(), sort: this.tableSort.get() },
     onSuccess: (response): void => {
-      console.log(response);
-      this.winnersSection.update(response);
+      this.winnersSection.update({
+        winners: response.data,
+        currentPage: response.meta.page,
+      });
       this.title.setText(this.getTitleCopy(response.meta.totalCount));
     },
   });
