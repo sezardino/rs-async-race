@@ -28,12 +28,15 @@ export type CreateWinnerRequest = Pick<WinnerEntity, 'id' | 'time' | 'wins'>;
 
 export type CreateWinnerResponse = WinnerEntity;
 
-export type EditWinnerRequest = Partial<Omit<CreateWinnerRequest, 'id'>> & {
-  winnerId: number;
+export type EditWinnerRequest = WinnerManipulationRequest &
+  Partial<Omit<CreateWinnerRequest, 'id'>>;
+
+export type WinnerManipulationRequest = {
+  carId: number;
 };
 
-export type DeleteWinnerRequest = {
-  winnerId: number;
+export type SaveWinnerRequest = WinnerManipulationRequest & {
+  time: number;
 };
 
 export type EditWinnerResponse = WinnerEntity;

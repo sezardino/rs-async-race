@@ -5,6 +5,7 @@ import { useCarDriveMutation } from '../../reactivity/mutations/car-drive';
 import { useCreateCarMutation } from '../../reactivity/mutations/create-car';
 import { useDeleteCarMutation } from '../../reactivity/mutations/delete-car';
 import { useGenerateCarsMutation } from '../../reactivity/mutations/generate-cars';
+import { useSaveWinnerMutation } from '../../reactivity/mutations/save-winner';
 import { useStartEngineMutation } from '../../reactivity/mutations/start-engine';
 import { useStopEngineMutation } from '../../reactivity/mutations/stop-engine';
 import { useUpdateCarMutation } from '../../reactivity/mutations/update-car';
@@ -101,6 +102,7 @@ export class GaragePage extends Page {
       neededCar.setEngineButtonDisabled('stop', true);
     },
   });
+  private saveWinner = useSaveWinnerMutation({});
   private drive = useCarDriveMutation({
     onError: (_, { carId }) => {
       const neededCar = this.findCarById(carId);
@@ -197,6 +199,7 @@ export class GaragePage extends Page {
       title: `Car ${car.name} finish race first`,
       description: `time: ${msToSeconds(time)}s`,
     });
+    void this.saveWinner.mutate({ carId: car.id, time });
   }
 
   private startRace(): void {

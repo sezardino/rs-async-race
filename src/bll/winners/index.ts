@@ -5,15 +5,17 @@ import {
 import type { WinnerWithCar } from '../../types/entity';
 import type { PaginationResponse } from '../../types/pagination';
 import { generatePaginationResponse } from '../../utils/generate-pagination-response';
+import { msToSeconds } from '../../utils/ms-to-seconds';
 import type { FetchAcceptedData, FetchResponse } from '../../utils/request';
 import { fetchInstance } from '../../utils/request';
 import { GarageApiService } from '../garage';
 import type {
   CreateWinnerRequest,
   CreateWinnerResponse,
-  DeleteWinnerRequest,
   EditWinnerRequest,
   EditWinnerResponse,
+  SaveWinnerRequest,
+  WinnerManipulationRequest,
   WinnerResponse,
   WinnersRequest,
   WinnersResponse,
@@ -64,8 +66,10 @@ export class WinnersApiService {
       );
   }
 
-  public static winner(id: string): Promise<FetchResponse<WinnerResponse>> {
-    return fetchInstance.get<WinnerResponse>(`/winners/${id}`);
+  public static winner({
+    carId,
+  }: WinnerManipulationRequest): Promise<FetchResponse<WinnerResponse>> {
+    return fetchInstance.get<WinnerResponse>(`/winners/${carId}`);
   }
 
   public static createWinner(
@@ -75,17 +79,43 @@ export class WinnersApiService {
   }
 
   public static updateWinner({
-    winnerId,
+    carId,
     ...dto
   }: EditWinnerRequest): Promise<FetchResponse<EditWinnerResponse>> {
-    return fetchInstance.put<EditWinnerResponse>(`/winners/${winnerId}`, {
+    return fetchInstance.put<EditWinnerResponse>(`/winners/${carId}`, {
       body: dto,
     });
   }
 
   public static deleteWinner({
-    winnerId,
-  }: DeleteWinnerRequest): Promise<FetchResponse<void>> {
-    return fetchInstance.delete<void>(`/winners/${winnerId}`);
+    carId,
+  }: WinnerManipulationRequest): Promise<FetchResponse<void>> {
+    return fetchInstance.delete<void>(`/winners/${carId}`);
+  }
+
+  public static async saveWinner(dto: SaveWinnerRequest): Promise<void> {
+    const { carId, time } = dto;
+
+    const timeSeconds = msToSeconds(time);
+
+    try {
+      const winnerResponse = await WinnersApiService.winner({ carId });
+
+      const { data } = winnerResponse;
+
+      const dataToSave = {
+        time: timeSeconds < data.time ? timeSeconds : undefined,
+        wins: data.wins + 1,
+      };
+
+      await WinnersApiService.updateWinner({ carId, ...dataToSave });
+    } catch (error) {
+      console.log(error);
+      await WinnersApiService.createWinner({
+        wins: 1,
+        id: carId,
+        time: timeSeconds,
+      });
+    }
   }
 }

@@ -66,7 +66,7 @@ export class GarageApiService {
     try {
       await fetchInstance.delete<void>(`/garage/${carId}`);
 
-      void WinnersApiService.deleteWinner({ winnerId: carId });
+      void WinnersApiService.deleteWinner({ carId });
     } catch (error) {
       console.log(error);
     }
