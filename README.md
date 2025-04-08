@@ -2,6 +2,10 @@
 
 **Async Race** is a web application that simulates asynchronous car races using a modular architecture and RESTful API.
 
+## Link for deploy
+
+https://rs-sezardino-async-race.vercel.app
+
 ## 🔧 Tech Stack
 
 - **TypeScript** — static typing
