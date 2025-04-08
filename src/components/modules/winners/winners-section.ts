@@ -54,10 +54,7 @@ export class WinnersSection extends Component {
     this.cleanSection();
 
     const header = this.getHeader(response.meta.page);
-    const headerPagination = this.getPagination(
-      response.meta.page,
-      response.meta.totalPages
-    );
+
     const footerPagination = this.getPagination(
       response.meta.page,
       response.meta.totalPages
@@ -65,7 +62,6 @@ export class WinnersSection extends Component {
 
     this.winnersTable.setData(response.data);
 
-    header.append(headerPagination);
     this.append(header, this.winnersTable, footerPagination);
   }
 
