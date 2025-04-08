@@ -34,7 +34,7 @@ export type TableConfig<T> = {
 };
 
 export class Table<T> extends Component<HTMLTableElement> {
-  private data: T[];
+  public data: T[];
   private columns: ColumnConfig<T>[];
   private sorting: TableSort | null;
   private onSort?: (sort: TableSort | null) => void;
@@ -58,6 +58,12 @@ export class Table<T> extends Component<HTMLTableElement> {
   public setData(data: T[]): void {
     this.data = data;
     this.renderBody();
+  }
+
+  public cleanBody(): void {
+    if (!this.tbody) return;
+
+    this.tbody.innerHTML = '';
   }
 
   private handleSort(columnName: string): void {

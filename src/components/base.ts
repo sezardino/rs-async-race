@@ -9,6 +9,8 @@ type BaseConfig = Pick<
 export const div = (config?: BaseConfig): Component => new Component(config);
 export const header = (config?: BaseConfig): Component =>
   new Component({ ...config, tag: 'header' });
+export const footer = (config?: BaseConfig): Component =>
+  new Component({ ...config, tag: 'footer' });
 export const section = (config?: BaseConfig): Component =>
   new Component({ ...config, tag: 'section' });
 

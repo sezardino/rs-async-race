@@ -1,9 +1,8 @@
-import { PAGINATION_DEFAULT_PAGE } from '../../../const/pagination';
 import type { WinnerWithCar } from '../../../types/entity';
 import type { PaginationResponse } from '../../../types/pagination';
 import type { ComponentConfig } from '../../abstract';
 import { Component } from '../../abstract';
-import { div, h2, header } from '../../base';
+import { footer, h2, header } from '../../base';
 import { Button } from '../../ui/button';
 import { Icon } from '../../ui/icon';
 import type { ColumnConfig, TableSort } from '../../ui/table';
@@ -24,10 +23,14 @@ export type WinnersSectionConfig = Omit<
 export class WinnersSection extends Component {
   public winners: { id: number; element: Component }[] = [];
 
-  private onNextPageClick: () => void;
-  private onPrevPageClick: () => void;
+  private title = h2({
+    textContent: this.getPageTitle(),
+    classNames: ['text-xl font-medium'],
+  });
 
   private winnersTable: Table<WinnerWithCar>;
+  private previousPageButton: Button;
+  private nextPageButton: Button;
 
   constructor(config: WinnersSectionConfig) {
     const {
@@ -46,72 +49,48 @@ export class WinnersSection extends Component {
 
     this.winnersTable = this.getTable(onSortChange, initialSort);
 
-    this.onNextPageClick = onNextPageClick;
-    this.onPrevPageClick = onPrevPageClick;
-  }
-
-  public render(response: PaginationResponse<WinnerWithCar>): void {
-    this.cleanSection();
-
-    const header = this.getHeader(response.meta.page);
-
-    const footerPagination = this.getPagination(
-      response.meta.page,
-      response.meta.totalPages
-    );
-
-    this.winnersTable.setData(response.data);
-
-    this.append(header, this.winnersTable, footerPagination);
-  }
-
-  private cleanSection(): void {
-    this.clean();
-    this.winners.forEach((winner) => winner.element.clean());
-  }
-
-  private getHeader(pageNumber: number): Component {
-    const wrapper = header({ classNames: ['flex flex-col gap-2'] });
-
-    const title = h2({
-      textContent: `Page: ${pageNumber}`,
-      classNames: ['text-xl font-medium'],
-    });
-
-    wrapper.append(title);
-
-    return wrapper;
-  }
-
-  private getPagination(currentPage: number, totalPages: number): Component {
-    const wrapper = div({
-      classNames: ['flex items-center gap-4 flex-wrap'],
-    });
-
-    const previous = new Button({
+    this.previousPageButton = new Button({
       textContent: `Prev`,
       color: 'alt',
       size: 'sm',
-      attributes: {
-        disabled: currentPage === PAGINATION_DEFAULT_PAGE ? 'true' : '',
-      },
+      disabled: true,
+      onClick: onNextPageClick,
     });
 
-    const next = new Button({
+    this.nextPageButton = new Button({
       textContent: 'Next',
       color: 'alt',
       size: 'sm',
-      attributes: {
-        disabled: currentPage === totalPages ? 'true' : '',
-      },
+      disabled: true,
+      onClick: onPrevPageClick,
     });
 
-    next.on('click', () => this.onNextPageClick());
-    previous.on('click', () => this.onPrevPageClick());
+    this.init();
+  }
 
-    wrapper.append(previous, next);
+  public update(response: PaginationResponse<WinnerWithCar>): void {
+    this.winnersTable.cleanBody();
+    this.winnersTable.setData(response.data);
 
-    return wrapper;
+    this.updateTitle(response.meta.page);
+  }
+
+  public updateTitle(currentPage: number): void {
+    this.title.setText(this.getPageTitle(currentPage));
+  }
+
+  private init(): void {
+    const headerWrapper = header({ classNames: ['flex flex-col gap-2'] });
+
+    headerWrapper.append(this.title);
+
+    const footerWrapper = footer({
+      classNames: ['flex items-center gap-4 flex-wrap'],
+    });
+
+    footerWrapper.append(this.previousPageButton, this.nextPageButton);
+
+    this.append(headerWrapper, this.winnersTable, footerWrapper);
   }
 
   private getTable(
@@ -164,5 +143,9 @@ export class WinnersSection extends Component {
       onSort: onSortChange,
       initialSort,
     });
+  }
+
+  private getPageTitle(currentPage = 1): string {
+    return `Page: ${currentPage}`;
   }
 }
